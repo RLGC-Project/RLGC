@@ -1,0 +1,35 @@
+ 0,  30           / PSS(R)E 30 SEQ created by RWSQVERSION  FRI, JUN 21 2013  16:16
+     1,'1 ', 0.0025E+00, 0.25
+     2,'1 ', 0.0025E+00, 0.25
+     3,'1 ', 0.0025E+00, 0.25
+	 4,'1 ', 0.0025E+00, 0.25
+ 0 /End of Positive sequence Generator data, Begin Negative sequence Generator data
+     1,'1 ', 0.0025E+00, 0.25
+     2,'1 ', 0.0025E+00, 0.25
+     3,'1 ', 0.0025E+00, 0.25
+	 4,'1 ', 0.0025E+00, 0.25
+ 0 /End of Negative sequence Generator data, Begin Zero sequence Generator data
+     1,'1 ', 0.0025E+00, 0.25
+     2,'1 ', 0.0025E+00, 0.25
+     3,'1 ', 0.0025E+00, 0.25
+	 4,'1 ', 0.0025E+00, 0.25
+ 0 /End of Zero sequence Generator data, Begin Negative sequence Load data
+ 0 /End of Negative sequence Load data, Begin Zero sequence Load data
+ 0 /End of Zero sequence Load data, Begin Zero sequence Branch data
+     5,      6,'1 ',   0.00625,	  0.0625,   0.04375,    0.00,    0.00,    0.00,  0.00000,  0.00000 
+     6,      7,'1 ',   0.0025,	  0.025,   0.01750,    0.00,    0.00,    0.00,  0.00000,  0.00000
+     7,      8,'1 ',   0.0275,	  0.275,   0.19250,    0.00,    0.00,    0.00,  0.00000,  0.00000
+     8,      9,'1 ',   0.0275,	  0.2750,   0.19250,    0.00,    0.00,    0.00,  0.00000,  0.00000
+	 7,      8,'2 ',   0.0275,	  0.27500,   0.19250,    0.00,    0.00,    0.00,  0.00000,  0.00000
+     8,      9,'2 ',   0.0275,	  0.27500,   0.19250,    0.00,    0.00,    0.00,  0.00000,  0.00000
+     9,     10,'1 ',   0.0025,    0.02500,   0.01750,    0.00,    0.00,    0.00,  0.00000,  0.00000	 
+    10,     11,'1 ',   0.006250,  0.062500,   0.04375,    0.00,    0.00,    0.00,  0.00000,  0.00000	 
+ 0 /End of Zero sequence Branch data, Begin Zero sequence Mutual data
+ 0 /End of Zero sequence Mutual data, Begin Zero sequence Transformer data
+   1,  5,  0,  '1',  3,   0,  0, 0.0000,  0.01667,  0, 0
+   2,  6,  0,  '1',  3,   0,  0, 0.0000,  0.01667,  0, 0
+   3,  11,  0,  '1',  3,   0,  0, 0.0000,  0.01667,  0, 0
+   4,  10,  0,  '1',  3,   0,  0, 0.0000,  0.01667,  0, 0
+ 0 /End of Zero sequence Transformer data, Begin Zero sequence Switched shunt data
+ 0  / END OF ZERO SEQ. SWITCHED SHUNT DATA, BEGIN ZERO SEQ. FIXED SHUNT DATA
+ 0  / END OF ZERO SEQ. FIXED SHUNT DATA

@@ -1,0 +1,48 @@
+{
+	"dynamicFileName": "testData\\Kundur-2area\\kunder_2area.dyr",
+	"dstabOutputFileName": "",
+	"dynMethod": "MODIFIED_EULER",
+	"totalSimuTimeSec": 30.0,
+	"simuTimeStepSec": 0.002,
+	"eventStartTimeSec": 1.0,
+	"eventDurationSec": 0.585,
+	"referenceGeneratorId": "",
+	"monitoringBusAry": ["Bus1","Bus2","Bus3","Bus4"],
+	"monitoringGenAry": ["Bus1-mach1","Bus2-mach1","Bus3-mach1","Bus4-mach1"],
+	"outputPerNSteps": 1,
+	"acscConfigBean": {
+		"seqFileName": "testData\\Kundur-2area\\kunder_2area.seq",
+		"acscOutputFileName": "",
+		"runAclf": false,
+		"runAclfConfig": {
+			"aclfCaseFileName": "testData\\Kundur-2area\\kunder_2area_ver30.raw",
+			"aclfOutputFileName": "",
+			"format": "PSSE",
+			"version": "PSSE_30",
+			"lfMethod": "PQ",
+			"maxIteration": 20,
+			"tolerance": 1.0E-5,
+			"nonDivergent": false,
+			"initBusVoltage": false,
+			"accFactor": 1.0,
+			"dslRunnerClassName": "org.interpss.pssl.plugin.cmd.AclfDslRunner"
+		},
+		"type": "BUS_FAULT",
+		"category": "GROUND_3P",
+		"zLG": {
+			"re": 0.0,
+			"im": 0.0
+		},
+		"zLL": {
+			"re": 0.0,
+			"im": 0.0
+		},
+		"faultBusId": "Bus9",
+		"faultBranchFromId": "",
+		"faultBranchToId": "",
+		"faultBranchCirId": "",
+		"distance": 0.0,
+		"dslRunnerClassName": "org.interpss.pssl.plugin.cmd.AcscDslRunner"
+	}
+
+}

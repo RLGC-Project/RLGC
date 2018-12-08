@@ -1,0 +1,37 @@
+{
+	"environmentName": "IEEE39_FIDVR_LoadShedding",
+	"studyCaseFolder": "testData\\IEEE39",
+	
+	"observationStateTypes": ["voltageMag","frequency"],
+	
+	"observationScopeType": "Bus",
+			
+	"observationScopeAry": ["Bus4","Bus504","Bus7","Bus507","Bus8","Bus508","Bus18","Bus518"],
+	
+	"historyObservationSize": 4,
+	
+	"actionTypes": ["LoadShed"],
+	
+	"actionScopeType":"Bus",
+	
+	"actionScopeAry":["Bus504","Bus507","Bus508", "Bus518"],
+	
+	"envStepTimeInSec": 0.1,
+	
+	"actionLevels":[0.0, -0.1, -0.2, -0.3],
+	
+    "unstableReward": -2000,
+    
+    "actionPenalty": 50.0,
+    
+    "invalidActionPenalty": 0.0,
+    
+    "preFaultActionPenalty":250,
+    
+    "observationWeight":1.0,
+    
+    "includeActionStatusInObservations": true
+    
+    
+	
+}

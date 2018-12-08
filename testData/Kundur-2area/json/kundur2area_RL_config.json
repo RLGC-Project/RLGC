@@ -1,0 +1,27 @@
+{
+	"environmentName": "kundur-2area",
+	"studyCaseFolder": "testData\\Kundur-2area\\Scnarios-TielineFlowChange",
+	
+	"observationStateTypes": ["genSpeed","genAngle"],
+	
+	"observationScopeType": "System",
+			
+	"observationScopeAry": [],
+	
+	"historyObservationSize": 1,
+	
+	"actionTypes": ["BrakeAction"],
+	
+	"actionScopeType":"Bus",
+	
+	"actionScopeAry":["Bus6"],
+	
+	"envStepTimeInSec": 0.1,
+	
+	"brakeResistorPU": 0.25,
+	
+    "unstableReward": -1000,
+    
+    "actionPenalty": 2.0
+	
+}

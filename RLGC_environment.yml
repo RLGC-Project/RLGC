@@ -1,0 +1,132 @@
+name: py3ml
+channels:
+- defaults
+dependencies:
+- cloudpickle=0.5.2=py36h84cdd9c_0
+- cycler=0.10.0=py36_0
+- dbus=1.10.20=0
+- decorator=4.0.11=py36_0
+- expat=2.2.5=he0dffb1_0
+- fontconfig=2.12.1=3
+- freetype=2.5.5=2
+- glib=2.50.2=1
+- gmp=6.1.2=h6c8ec71_1
+- gst-plugins-base=1.8.0=0
+- gstreamer=1.8.0=0
+- icu=54.1=0
+- jbig=2.1=0
+- jpeg=9b=h024ee3a_2
+- libffi=3.2.1=hd88cf55_4
+- libgcc=7.2.0=h69d50b8_2
+- libgcc-ng=7.2.0=h7cc24e2_2
+- libgfortran=3.0.0=1
+- libiconv=1.14=0
+- libpng=1.6.27=0
+- libstdcxx-ng=7.2.0=h7a57d05_2
+- libtiff=4.0.6=3
+- libxcb=1.12=hcd93eb1_4
+- libxml2=2.9.4=0
+- matplotlib=2.0.1=np112py36_0
+- mkl=2017.0.1=0
+- networkx=1.11=py36_0
+- numpy=1.12.1=py36_0
+- olefile=0.44=py36_0
+- openssl=1.0.2k=1
+- pandas=0.21.0=py36h78bd809_1
+- pandoc=1.19.2.1=hea2e7c5_1
+- patsy=0.4.1=py36ha3be15e_0
+- pcre=8.39=1
+- pillow=4.1.0=py36_0
+- pip=9.0.1=py36_1
+- py4j=0.10.6=py36hf94ae02_1
+- pyparsing=2.1.4=py36_0
+- pyqt=5.6.0=py36_2
+- python=3.6.1=0
+- python-dateutil=2.6.0=py36_0
+- pytz=2017.2=py36_0
+- pywavelets=0.5.2=np112py36_0
+- qt=5.6.2=5
+- readline=6.2=2
+- requests=2.13.0=py36_0
+- scikit-image=0.13.0=np112py36_0
+- scikit-learn=0.18.1=np112py36_1
+- scipy=0.19.0=np112py36_0
+- seaborn=0.8.1=py36hfad7ec4_0
+- setuptools=27.2.0=py36_0
+- sip=4.18=py36_0
+- six=1.10.0=py36_0
+- sqlite=3.13.0=0
+- statsmodels=0.8.0=py36h8533d0b_0
+- tk=8.5.18=0
+- tqdm=4.11.2=py36_0
+- wheel=0.29.0=py36_0
+- xz=5.2.2=1
+- zlib=1.2.8=3
+- pip:
+  - appdirs==1.4.3
+  - appnope==0.1.0
+  - atari-py==0.1.1
+  - azure==1.0.3
+  - azure-common==1.1.8
+  - azure-mgmt==0.20.2
+  - azure-mgmt-common==0.20.0
+  - azure-mgmt-compute==0.20.1
+  - azure-mgmt-network==0.20.1
+  - azure-mgmt-nspkg==2.0.0
+  - azure-mgmt-resource==0.20.1
+  - azure-mgmt-storage==0.20.0
+  - azure-nspkg==2.0.0
+  - azure-servicebus==0.20.1
+  - azure-servicemanagement-legacy==0.20.2
+  - azure-storage==0.20.3
+  - baselines==0.1.4
+  - bleach==2.0.0
+  - dill==0.2.7.1
+  - entrypoints==0.2.2
+  - future==0.16.0
+  - gym==0.9.4
+  - html5lib==0.999999999
+  - ipykernel==4.6.1
+  - ipython==6.0.0
+  - ipython-genutils==0.2.0
+  - ipywidgets==6.0.0
+  - jedi==0.10.2
+  - jinja2==2.9.6
+  - joblib==0.11
+  - jsonschema==2.6.0
+  - jupyter==1.0.0
+  - jupyter-client==5.0.1
+  - jupyter-console==5.1.0
+  - jupyter-core==4.3.0
+  - markupsafe==1.0
+  - mistune==0.7.4
+  - nbconvert==5.1.1
+  - nbformat==4.3.0
+  - notebook==5.0.0
+  - packaging==16.8
+  - pandocfilters==1.4.1
+  - pexpect==4.2.1
+  - pickleshare==0.7.4
+  - progressbar2==3.34.3
+  - prompt-toolkit==1.0.14
+  - protobuf==3.2.0
+  - ptyprocess==0.5.1
+  - pyglet==1.3.0
+  - pygments==2.2.0
+  - pyopengl==3.1.0
+  - python-utils==2.2.0
+  - pyzmq==16.0.2
+  - qtconsole==4.3.0
+  - simplegeneric==0.8.1
+  - tensorflow==1.1.0
+  - terminado==0.6
+  - testpath==0.3
+  - tornado==4.5.1
+  - traitlets==4.3.2
+  - wcwidth==0.1.7
+  - webencodings==0.5.1
+  - werkzeug==0.12.1
+  - widgetsnbextension==2.0.0
+  - zmq==0.0.0
+prefix: /home/haow889/anaconda/envs/py3ml
+
