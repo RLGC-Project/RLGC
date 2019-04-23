@@ -136,7 +136,11 @@ source deactivate
 
 Two Jupyter notebooks (with Linux and Windows versions-- directory paths are specified differently) are provided as examples for checking training results and testing trained RL model.
 
-### 
 
+--------------------------------------
+#### Communication
 
+If you spot a bug or have a problem running the code, please open an issue.
+
+Please direct other correspondence to Qiuhua Huang: qiuhua DOT huang AT pnnl DOT gov
 
