@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.DoubleStream;
@@ -67,14 +68,16 @@ public class IpssPyGateway {
 	// observation
 	Hashtable<Integer,double[]> observationHistoryRecord = null;
 	
-	Hashtable<String,Double> obsrv_freq = null;
-	Hashtable<String,Double> obsrv_voltMag = null;
-	Hashtable<String,Double> obsrv_voltAng = null;
-	Hashtable<String,Double> obsrv_genSpd = null;
-	Hashtable<String,Double> obsrv_genAng = null;
-	Hashtable<String,Double> obsrv_genP = null;
-	Hashtable<String,Double> obsrv_loadP = null;
-	Hashtable<String,Double> obsrv_loadQ = null;
+	LinkedHashMap<String,Double> obsrv_freq = null;
+	LinkedHashMap<String,Double> obsrv_voltMag = null;
+	LinkedHashMap<String,Double> obsrv_voltAng = null;
+	LinkedHashMap<String,Double> obsrv_genSpd = null;
+	LinkedHashMap<String,Double> obsrv_genAng = null;
+	LinkedHashMap<String,Double> obsrv_genP = null;
+	LinkedHashMap<String,Double> obsrv_loadP = null;
+	LinkedHashMap<String,Double> obsrv_loadQ = null;
+	
+	List<String> obsrv_state_names = null;
 	
 	double[] observationAry = null;
 
@@ -224,6 +227,9 @@ public class IpssPyGateway {
 		//read the rlConfigFile to determine the dimension of the observation and action spaces
 		int[] observation_space_dim = initObsverationSpace();
 		
+		System.out.println("Observed states:\n"+Arrays.toString(getEnvObversationNames()));
+		System.out.println("Initial values of the observed states:\n"+Arrays.toString(observationAry));
+		
 		
 		// prepare the return array
 		int[] obs_action_dim_ary= {observation_space_dim[0],observation_space_dim[1],action_space_dim[0],action_space_dim[1]};
@@ -270,8 +276,15 @@ public class IpssPyGateway {
         return multiStepObservations;
     }
     
-	//TODO hashtable to store the past N step internal "states" for output as an environment state
     
+    public String[] getEnvObversationNames() {
+    	
+    	return obsrv_state_names.toArray(new String[0]);
+    	
+    }
+    
+    
+	//TODO hashtable to store the past N step internal "states" for output as an environment state
     
     
 	
@@ -284,11 +297,11 @@ public class IpssPyGateway {
 		if(this.rlConfigBean.environmentName.contains("kundur-2area")) {
 			// area-1: "Bus1-mach1","Bus2-mach1",
 			// area-2: "Bus3-mach1","Bus4-mach1"
-			double equiv_angle_area_1 = (this.obsrv_genAng.get("Bus1-mach1")+this.obsrv_genAng.get("Bus2-mach1"))*0.5;
-			double equiv_angle_area_2 = (this.obsrv_genAng.get("Bus3-mach1")+this.obsrv_genAng.get("Bus4-mach1"))*0.5;
+			double equiv_angle_area_1 = (this.obsrv_genAng.get("genAngle_Bus1-mach1")+this.obsrv_genAng.get("genAngle_Bus2-mach1"))*0.5;
+			double equiv_angle_area_2 = (this.obsrv_genAng.get("genAngle_Bus3-mach1")+this.obsrv_genAng.get("genAngle_Bus4-mach1"))*0.5;
 			
-			double equiv_spd_area_1 = (this.obsrv_genSpd.get("Bus1-mach1")+this.obsrv_genSpd.get("Bus2-mach1"))*0.5;
-			double equiv_spd_area_2 = (this.obsrv_genSpd.get("Bus3-mach1")+this.obsrv_genSpd.get("Bus4-mach1"))*0.5;
+			double equiv_spd_area_1 = (this.obsrv_genSpd.get("genSpeed_Bus1-mach1")+this.obsrv_genSpd.get("genSpeed_Bus2-mach1"))*0.5;
+			double equiv_spd_area_2 = (this.obsrv_genSpd.get("genSpeed_Bus3-mach1")+this.obsrv_genSpd.get("genSpeed_Bus4-mach1"))*0.5;
 			
 			double delta_equiv_angle = equiv_angle_area_1-equiv_angle_area_2;
 			
@@ -431,11 +444,11 @@ public class IpssPyGateway {
 		if(this.rlConfigBean.environmentName.contains("kundur-2area")) {
 			// area-1: "Bus1-mach1","Bus2-mach1",
 			// area-2: "Bus3-mach1","Bus4-mach1"
-			double equiv_angle_area_1 = (this.obsrv_genAng.get("Bus1-mach1")+this.obsrv_genAng.get("Bus2-mach1"))*0.5;
-			double equiv_angle_area_2 = (this.obsrv_genAng.get("Bus3-mach1")+this.obsrv_genAng.get("Bus4-mach1"))*0.5;
+			double equiv_angle_area_1 = (this.obsrv_genAng.get("genAngle_Bus1-mach1")+this.obsrv_genAng.get("genAngle_Bus2-mach1"))*0.5;
+			double equiv_angle_area_2 = (this.obsrv_genAng.get("genAngle_Bus3-mach1")+this.obsrv_genAng.get("genAngle_Bus4-mach1"))*0.5;
 			
-			double equiv_spd_area_1 = (this.obsrv_genSpd.get("Bus1-mach1")+this.obsrv_genSpd.get("Bus2-mach1"))*0.5;
-			double equiv_spd_area_2 = (this.obsrv_genSpd.get("Bus3-mach1")+this.obsrv_genSpd.get("Bus4-mach1"))*0.5;
+			double equiv_spd_area_1 = (this.obsrv_genSpd.get("genSpeed_Bus1-mach1")+this.obsrv_genSpd.get("genSpeed_Bus2-mach1"))*0.5;
+			double equiv_spd_area_2 = (this.obsrv_genSpd.get("genSpeed_Bus3-mach1")+this.obsrv_genSpd.get("genSpeed_Bus4-mach1"))*0.5;
 			
 			double delta_equiv_angle = equiv_angle_area_1-equiv_angle_area_2;
 			
@@ -502,18 +515,20 @@ public class IpssPyGateway {
 		
 		this.agentActionValuesAry = actionValueAry;
 		
-		if(this.dstabAlgo.getSimuTime() < this.faultStartTime){
-			for(int i = 0; i <this.agentActionValuesAry.length;i++){
-				if( Math.abs(this.agentActionValuesAry[i]) > 0.1){ // non-zero values will be detected
-					this.isPreFaultActionApplied = true;
-					
-					this.agentActionValuesAry[i] = 0.0; // force it to zero; invalid actions will not be applied
+		if(this.agentActionValuesAry!=null) {
+			if(this.dstabAlgo.getSimuTime() < this.faultStartTime){
+				for(int i = 0; i <this.agentActionValuesAry.length;i++){
+					if( Math.abs(this.agentActionValuesAry[i]) > 0.1){ // non-zero values will be detected
+						this.isPreFaultActionApplied = true;
+						
+						this.agentActionValuesAry[i] = 0.0; // force it to zero; invalid actions will not be applied
+					}
 				}
 			}
-		}
+	
 		
 		applyAction(this.agentActionValuesAry, actionType, stepTimeInSec);
-		
+		}
 		
 		for(int i = 0; i<internalSteps; i++) {
 			if(dstabAlgo.getSimuTime()<dstabAlgo.getTotalSimuTimeSec()) {
@@ -831,14 +846,21 @@ public class IpssPyGateway {
 		
 		String[] scopeAry = rlConfigBean.observationScopeAry;
 		
-		obsrv_freq = new Hashtable<>();
-		obsrv_voltMag = new Hashtable<>();
-		obsrv_voltAng = new Hashtable<>();
-		obsrv_genSpd = new Hashtable<>();
-		obsrv_genAng = new Hashtable<>();
-		obsrv_genP = new Hashtable<>();
-		obsrv_loadP = new Hashtable<>();
-		obsrv_loadQ = new Hashtable<>();
+		
+		// The reason of using separate hashtables to store the states is to keep the same type of states in a consecutive form, as the implementation below is iterating over
+		// the bus, not the state type first.
+		// Then different types of states are concatted to one large vector/array 
+		
+		obsrv_freq = new LinkedHashMap<>();
+		obsrv_voltMag = new LinkedHashMap<>();
+		obsrv_voltAng = new LinkedHashMap<>();
+		obsrv_genSpd = new LinkedHashMap<>();
+		obsrv_genAng = new LinkedHashMap<>();
+		obsrv_genP = new LinkedHashMap<>();
+		obsrv_loadP = new LinkedHashMap<>();
+		obsrv_loadQ = new LinkedHashMap<>();
+		
+		obsrv_state_names = new ArrayList<>();
 		
 		List<Double> all_observ_states = new ArrayList<>();
 		
@@ -853,27 +875,27 @@ public class IpssPyGateway {
 					for(String stateType : obsrvStateTypes) {
 						if(stateType.equalsIgnoreCase("frequency")) {
 							
-							obsrv_freq.put(bus.getId(),bus.getFreq());
+							obsrv_freq.put("frequency_"+bus.getId(),bus.getFreq());
 						}
 						if(stateType.equalsIgnoreCase("voltageMag")) {
 							
-							obsrv_voltMag.put(bus.getId(),bus.getVoltageMag());
+							obsrv_voltMag.put("voltageMag_"+bus.getId(),bus.getVoltageMag());
 						}
 						if(stateType.equalsIgnoreCase("voltageAng")) {
 							
-							obsrv_voltAng.put(bus.getId(),bus.getVoltageAng());
+							obsrv_voltAng.put("voltageAng_"+bus.getId(),bus.getVoltageAng());
 						}
 						
 						if(stateType.equalsIgnoreCase("loadP")) {
 							if(bus.isLoad() || bus.getContributeLoadList().size()>0) {
 								//TODO need to update to capture dynamic total loads
-							   obsrv_loadP.put(bus.getId(),bus.getLoadP());
+							   obsrv_loadP.put("loadP_"+bus.getId(),bus.getLoadP());
 							}
 						}
 						if(stateType.equalsIgnoreCase("loadQ")) {
 							if(bus.isLoad() || bus.getContributeLoadList().size()>0) {
 							  //TODO need to update to capture dynamic total loads
-							   obsrv_loadQ.put(bus.getId(),bus.getLoadQ());
+							   obsrv_loadQ.put("loadQ_"+bus.getId(),bus.getLoadQ());
 							}
 						}
 						if(stateType.equalsIgnoreCase("genSpeed")) {
@@ -883,7 +905,7 @@ public class IpssPyGateway {
 							    	   DStabGen dsGen = (DStabGen) gen;
 							    	   if(dsGen.getMach()!=null) {
 								         
-								           obsrv_genSpd.put(dsGen.getMach().getId(),dsGen.getMach().getSpeed());
+								           obsrv_genSpd.put("genSpeed_"+dsGen.getMach().getId(),dsGen.getMach().getSpeed());
 								           // dsGen.getMach().getGovernor().get
 							    	   }
 							       }
@@ -898,7 +920,7 @@ public class IpssPyGateway {
 							    	   DStabGen dsGen = (DStabGen) gen;
 							    	   if(dsGen.getMach()!=null) {
 								         
-								           obsrv_genAng.put(dsGen.getMach().getId(),dsGen.getMach().getAngle());
+								           obsrv_genAng.put("genAngle_"+dsGen.getMach().getId(),dsGen.getMach().getAngle());
 							    	   }
 							       }
 							    }
@@ -913,6 +935,7 @@ public class IpssPyGateway {
 			}
 		}
 		
+		// values
 		all_observ_states.addAll(obsrv_freq.values());
 		all_observ_states.addAll(obsrv_voltMag.values());
 		all_observ_states.addAll(obsrv_voltAng.values());
@@ -921,16 +944,31 @@ public class IpssPyGateway {
 		all_observ_states.addAll(obsrv_genSpd.values());
 		all_observ_states.addAll(obsrv_genAng.values());
 		
+		// the observed state names
+		obsrv_state_names.addAll(obsrv_freq.keySet());
+		obsrv_state_names.addAll(obsrv_voltMag.keySet());
+		obsrv_state_names.addAll(obsrv_voltAng.keySet());
+		obsrv_state_names.addAll(obsrv_loadP.keySet());
+		obsrv_state_names.addAll(obsrv_loadQ.keySet());
+		obsrv_state_names.addAll(obsrv_genSpd.keySet());
+		obsrv_state_names.addAll(obsrv_genAng.keySet());
+		
 		
 		observationAry = Stream.of(all_observ_states.toArray(new Double[0])).mapToDouble(Double::doubleValue).toArray();
 		
 		
 		//append the action status observations to <this.observationHistoryRecord>
 		//TODO tentatively hard-code to add remaining fractions of to-be-tripped bus loads to observation space and the observed state
-		if( rlConfigBean.includeActionStatusInObservations == true && rlConfigBean.environmentName.contains("LoadShedd")){
+		if( rlConfigBean.includeActionStatusInObservations == true && rlConfigBean.environmentName.contains("LoadShed")){
 			
 			double[] actionStatus = this.actionProc.getAgentActionStatus(); // one state for observation for each location.
 			observationAry = DoubleStream.concat(DoubleStream.of(observationAry),DoubleStream.of(actionStatus)).toArray();
+			
+			String[] actionBusAry = this.actionProc.getActionScopeByBus();
+			
+			for (String actionBus:actionBusAry) {
+				obsrv_state_names.add("ActionStatus@"+actionBus);
+			}
 		    
 		}
 		
@@ -1014,7 +1052,9 @@ public class IpssPyGateway {
 		}
 			
 		GatewayServer server = new GatewayServer(app,port);
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.70, built on 05/03/2018");
+
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.72, built on 04/23/2019");
+
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();
 	}

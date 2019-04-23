@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-logging.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/apache/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.common.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.ecore.change.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.ecore.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.ecore.xmi.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/eclipse/org.eclipse.emf.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/python/py4j0.10.6.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/sparse/csparsej-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/json/gson-2.2.2.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/spring/spring-2.5.6.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/cache/hazelcast-3.8.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/jgraph.jar"/>
+	<classpathentry kind="lib" path="/ipss.lib.3rdPty/lib/swing/swing-layout-1.0.3.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ieee.odm_pss"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ieee.odm.schema"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.common"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.core_EMF"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.dstab_EMF"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.numeric"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.base"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.plugin.dstab"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.pssl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ipss.simu_EMF"/>
+	<classpathentry kind="lib" path="/ipss.lib/lib/ipss/ipss_core.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
