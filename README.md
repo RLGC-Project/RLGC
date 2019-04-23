@@ -104,7 +104,7 @@ rm simple.cpython-36.pyc
 
 
 ### Training
-First launch java server which is used to simulate the power grid system. Then launch your training in the virtual environment. We provide two power grid systems in the examples. ```RLGCJavaServer0.70.jar``` is the latest release and can be used for the IEEE 39-bus system and ```RLGCJavaServerSimple.jar```is only used for the Kundur 2-area system.   
+First launch java server which is used to simulate the power grid system. Then launch your training in the virtual environment. We provide two power grid systems in the examples. ```RLGCJavaServer0.72.jar``` is the latest release and can be used for the IEEE 39-bus system and ```RLGCJavaServerSimple.jar```is only used for the Kundur 2-area system.   
 
 - To launch the java server, open a new terminal    
 
