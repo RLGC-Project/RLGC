@@ -111,7 +111,7 @@ First launch java server which is used to simulate the power grid system. Then l
 ```
 cd ~
 cd RLGC/lib  
-java -jar RLGCJavaServer0.70.jar 25001
+java -jar RLGCJavaServer0.72.jar 25001
 ```
 The last parameter is the communication port number between grid system and the training agent. You can switch the port number if necessary.  
 
@@ -135,6 +135,21 @@ source deactivate
 ###  Check training results and test trained model
 
 Two Jupyter notebooks (with Linux and Windows versions-- directory paths are specified differently) are provided as examples for checking training results and testing trained RL model.
+
+
+
+### Citation
+
+If you use this code please cite it as:
+
+```
+@article{huang2019adaptive,
+  title={Adaptive Power System Emergency Control using Deep Reinforcement Learning},
+  author={Huang, Qiuhua and Huang, Renke and Hao, Weituo and Tan, Jie and Fan, Rui and Huang, Zhenyu},
+  journal={arXiv preprint arXiv:1903.03712},
+  year={2019}
+}
+```
 
 
 --------------------------------------
