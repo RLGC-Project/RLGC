@@ -2,8 +2,9 @@
 Repo of the Reinforcement Learning for Grid Control (RLGC) Project
 
 
-  We explore to use deep reinforcement learning methods for emergency control in power grid system.  
-
+  We explore to use deep reinforcement learning methods for emergency control in power grid system.
+    
+--------------------------------------
 ### Environment setup  
 
    To run the training, you need python 3.5 or above and Java 8. Unix-based OS is required. We suggest using Anaconda 5.0 to create virtual environment from the yaml file we provided.  
@@ -136,7 +137,7 @@ source deactivate
 
 Two Jupyter notebooks (with Linux and Windows versions-- directory paths are specified differently) are provided as examples for checking training results and testing trained RL model.
 
-
+--------------------------------------
 
 ### Citation
 
