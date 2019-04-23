@@ -3,8 +3,7 @@ Repo of the Reinforcement Learning for Grid Control (RLGC) Project
 
 We explore to use deep reinforcement learning methods for control and decision-making problems in power systems.
 
-*NOTE:* Current TF-Agents pre-release is under active development and
-interfaces may change at any time. Feel free to provide feedback and comments.
+*NOTE:* RLGC is under active development and may change at any time. Feel free to provide feedback and comments.
     
 --------------------------------------
 ### Environment setup  
