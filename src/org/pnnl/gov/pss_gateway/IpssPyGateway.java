@@ -8,10 +8,12 @@ import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.ode.FirstOrderConverter;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
@@ -26,6 +28,7 @@ import org.pnnl.gov.rl.action.ActionProcessor;
 import org.pnnl.gov.rl.action.GenBrakeActionProcessor;
 import org.pnnl.gov.rl.action.LoadChangeActionProcessor;
 
+import com.hazelcast.internal.serialization.impl.ConstantSerializers.TheByteArraySerializer;
 import com.interpss.CoreCommonFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
@@ -220,6 +223,8 @@ public class IpssPyGateway {
 		int[] action_space_dim = initActionSpace();
 		
 		// save the internal observations to this.observationHistoryRecord
+		
+		this.internalObsrvRecordNum = 0;
 		saveInternalObservations();
 		
 		
@@ -653,8 +658,13 @@ public class IpssPyGateway {
 		
 		if(historyObservSize>1) {
 			double[] record = this.observationHistoryRecord.get(0);
-			for(int i = 1; i<historyObservSize; i++) {
-				this.observationHistoryRecord.put(i, record);
+			if(record !=null) {
+				for(int i = 1; i<historyObservSize; i++) {
+					this.observationHistoryRecord.put(i, record);
+				}
+			}
+			else{
+				throw new Error("The first record in this.observationHistoryRecord is null!");
 			}
 			
 		}
@@ -1043,6 +1053,7 @@ public class IpssPyGateway {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		IpssLogger.getLogger().setLevel(Level.SEVERE);
 		IpssPyGateway app = new IpssPyGateway();
 		// app is now the gateway.entry_point
 		int port = 25333;
@@ -1053,7 +1064,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.72, built on 04/23/2019");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.73, built on 07/27/2019");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

@@ -14,7 +14,7 @@ from gym import wrappers
 from datetime import datetime
 import time
 #from q_learning_bins import plot_running_avg
-from PowerDynSimEnvDefmultima1 import PowerDynSimEnv
+from PowerDynSimEnvDef_v3 import PowerDynSimEnv
 
 
 from baselines import deepq
@@ -24,7 +24,7 @@ import baselines.common.tf_util as U
 np.random.seed(19)
 
 # create
-java_port = 25001
+java_port = 25333
 #gateway = JavaGateway(gateway_parameters=GatewayParameters(auto_convert=True))
 gateway = JavaGateway(gateway_parameters=GatewayParameters(port = java_port, auto_convert=True))
 ipss_app = gateway.entry_point

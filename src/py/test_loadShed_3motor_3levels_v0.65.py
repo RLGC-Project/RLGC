@@ -69,11 +69,11 @@ case_files_array = gateway.new_array(gateway.jvm.String, 2)
 case_files_array[0] = folder_dir+'\\'+'testData\\IEEE39\\IEEE39bus_multiloads_xfmr4_smallX_v30.raw'
 case_files_array[1] = folder_dir+'\\'+'testData\\IEEE39\\IEEE39bus_3AC.dyr'
 
-dyn_config_file = folder_dir+'\\'+'testData\\IEEE39\\json\\IEEE39_dyn_config_v0.65.json'
-rl_config_file = folder_dir+'\\'+'testData\\IEEE39\\json\\IEEE39_RL_loadShedding_3motor_3levels_v0.65.json'
+dyn_config_file = folder_dir+'\\'+'testData\\IEEE39\\json\\IEEE39_dyn_config.json'
+rl_config_file = folder_dir+'\\'+'testData\\IEEE39\\json\\IEEE39_RL_loadShedding_3motor_3levels.json'
 
 
-from PowerDynSimEnvDefmultima import PowerDynSimEnv
+from PowerDynSimEnvDef_v3 import PowerDynSimEnv
 actions = [3, 3, 3]
 env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,cnts=actions)
 

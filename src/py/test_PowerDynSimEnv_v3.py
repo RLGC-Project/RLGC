@@ -3,11 +3,9 @@ from py4j.java_gateway import (JavaGateway, GatewayParameters)
 
 import os
 folder_dir = 'C:\\Users\huan289\\git\\deepgrid\\DeepGrid'
-os.chdir(folder_dir)
 
-print(os.getcwd())
 
-java_port = 25334
+java_port = 25333
 # gateway = JavaGateway(
 #     gateway_parameters=GatewayParameters(port = java_port, auto_convert=True)
 #     )
@@ -31,17 +29,24 @@ rl_config_file = folder_dir+'\\testData\\Kundur-2area\\json\\kundur2area_RL_conf
 
 action_levels = [2]
 
+import os.path
+import sys
+# This is to fix the issue of "ModuleNotFoundError" below
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))  
+
 from PowerDynSimEnvDef_v3 import PowerDynSimEnv
 env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,java_port,action_levels)
 
 
 for i in range(5):
-    env.reset()
     results = env.step(1)
     print('states =',results[0])
     print('step reward =', results[1])
     
 
 print('test completed')
+
+env.close_connection()
+print('connection with Ipss Server is closed')
 
              

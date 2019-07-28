@@ -8,7 +8,7 @@ from py4j.java_gateway import (JavaGateway, GatewayParameters)
 
 import random
 from py4j.tests.java_gateway_test import gateway
-from numba.types.containers import PyArray
+
 
 
 #CNTS = [2,2,2]
@@ -168,7 +168,7 @@ class PowerDynSimEnv(gym.Env):
 
         self.observation_space = spaces.Box(-999,999,shape=(observation_history_length * observation_space_dim,)) # Continuous
 
-        self._seed()
+        self.seed()
 
         #TOOD get the initial states
         self.state = None
@@ -176,11 +176,11 @@ class PowerDynSimEnv(gym.Env):
         self.steps_beyond_done = None
         self.restart_simulation = True
 
-    def _seed(self, seed=None):
+    def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _step(self, action):
+    def step(self, action):
 
         assert self.action_space.contains(action), "%r (%s) invalid"%(action, type(action))
 
@@ -232,7 +232,7 @@ class PowerDynSimEnv(gym.Env):
 
         return np.array(self.state).ravel(), reward, done, {}
 
-    def _reset(self):
+    def reset(self):
 
        
 
@@ -282,11 +282,11 @@ class PowerDynSimEnv(gym.Env):
         return np.array(self.state).ravel(),fault_start_time,fault_duation_time
 
     # init the system with a specific state and fault
-    def _validate(self, case_Idx, fault_bus_idx, fault_start_time, fault_duation_time):
+    def validate(self, case_Idx, fault_bus_idx, fault_start_time, fault_duation_time):
 
         total_bus_num = self.ipss_app.getTotalBusNum()
 
-        self.ipss_app.Reset(case_Idx,fault_bus_idx,fault_start_time,fault_duation_time)
+        self.ipss_app.reset(case_Idx,fault_bus_idx,fault_start_time,fault_duation_time)
 
         # observations is a Java_Collections array
         observations = self.ipss_app.getEnvObversations();
@@ -298,5 +298,9 @@ class PowerDynSimEnv(gym.Env):
         self.restart_simulation = True
 
         return np.array(self.state).ravel()
+    
+    def close_connection(self):
+        self.a_gateway.close(keep_callback_server=True, close_callback_server_connections=False)
+        
 
     # def _render(self, mode='human', close=False):
