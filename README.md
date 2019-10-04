@@ -148,8 +148,9 @@ If you use this code please cite it as:
 @article{huang2019adaptive,
   title={Adaptive Power System Emergency Control using Deep Reinforcement Learning},
   author={Huang, Qiuhua and Huang, Renke and Hao, Weituo and Tan, Jie and Fan, Rui and Huang, Zhenyu},
-  journal={arXiv preprint arXiv:1903.03712},
-  year={2019}
+  journal={IEEE Transactions on Smart Grid},
+  year={2019},
+  publisher={IEEE}
 }
 ```
 
