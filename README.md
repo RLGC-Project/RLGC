@@ -45,7 +45,7 @@ We explore to use deep reinforcement learning methods for control and decision-m
      source deactivate
      ```
 
-### Modification of Gym source code  
+### (NOTE: this may not be needed for the latest Gym) Modification of Gym source code  
 
 Note that we need to change the source code of OpenAI Gym Baseline models because To modify the source code,   
 
