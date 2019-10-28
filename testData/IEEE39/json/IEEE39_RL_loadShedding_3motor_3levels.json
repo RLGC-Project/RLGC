@@ -34,7 +34,13 @@
 
     "minVoltRecoveryLevel":0.95, 
             
-    "maxVoltRecoveryTime":3.0 
+    "maxVoltRecoveryTime":3.0,
+
+     "faultBusCandidates": ["Bus4"],
+	
+    "faultStartTimeCandidates": [0.05],
+	
+    "faultDurationCandidates": [0.0, 0.05, 0.08]
     
 	
 }
