@@ -63,7 +63,7 @@ The last parameter is the communication port number between grid system and the 
 
 
 ```
-source activate py3ml
+source activate <your-env-name> 
 cd RLGC/src/py  
 python trainIEEE39LoadSheddingAgent.py 
 ```
