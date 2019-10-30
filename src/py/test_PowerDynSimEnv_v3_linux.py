@@ -4,7 +4,7 @@ from py4j.java_gateway import (JavaGateway, GatewayParameters)
 import os
 
 
-java_port = 25333
+java_port = 25001
 
 a = os.path.abspath(os.path.dirname(__file__))
 
@@ -12,13 +12,12 @@ folder_dir = a[:-7]
 
 case_files_array = []
 
-case_files_array.append(folder_dir +'\\testData\\Kundur-2area\\kunder_2area_ver30.raw')
-case_files_array.append(folder_dir+'\\testData\\Kundur-2area\\kunder_2area.dyr')
+case_files_array.append(folder_dir +'/testData/Kundur-2area/kunder_2area_ver30.raw')
+case_files_array.append(folder_dir+'/testData/Kundur-2area/kunder_2area.dyr')
 
-dyn_config_file = folder_dir+'\\testData\\Kundur-2area\\json\\kundur2area_dyn_config.json'
+dyn_config_file = folder_dir+'/testData/Kundur-2area/json/kundur2area_dyn_config.json'
 
-# rl_config_file = 'testData\\Kundur-2area\\json\\kundur2area_RL_config.json'
-rl_config_file = folder_dir+'\\testData\\Kundur-2area\\json\\kundur2area_RL_config_multiStepObsv.json'
+rl_config_file = folder_dir+'/testData/Kundur-2area/json/kundur2area_RL_config_multiStepObsv.json'
 
 
 

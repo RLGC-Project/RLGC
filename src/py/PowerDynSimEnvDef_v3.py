@@ -208,13 +208,15 @@ class PowerDynSimEnv(gym.Env):
         # retrieve the state from InterPSS simulation service
 
         # observations is a Java_Collections array
-        observations = self.ipss_app.getEnvObversations();
+        observations = self.ipss_app.getEnvObversations()
 
         # convert it from Java_collections array to native Python array
         self.state = transfer2DJavaArray2NumpyArray(observations)
+        
+        # print('observation shape: ', np.shape(self.state))
 
         #check the states to see whether it go beyond the limits
-        done = self.ipss_app.isSimulationDone();
+        done = self.ipss_app.isSimulationDone()
 
 
         if not done:
@@ -260,8 +262,6 @@ class PowerDynSimEnv(gym.Env):
         fault_duation_time = ftd_candidates[np.random.randint(0, len(ftd_candidates))] # a double number, in the range of [0.08, 0.4]
   
   
-
-
         # reset initial state to states of time = 0, non-fault
 
         self.ipss_app.reset(case_Idx,fault_bus_idx,fault_start_time,fault_duation_time)
@@ -278,8 +278,9 @@ class PowerDynSimEnv(gym.Env):
 
         self.steps_beyond_done = None
         self.restart_simulation = True
+        
 
-        return np.array(self.state).ravel(),fault_start_time,fault_duation_time
+        return np.array(self.state).ravel()
 
     # init the system with a specific state and fault
     def validate(self, case_Idx, fault_bus_idx, fault_start_time, fault_duation_time):
