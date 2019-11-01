@@ -59,8 +59,6 @@ gateway = JavaGateway(
 ipss_app = gateway.entry_point
 
 
-
-
 # case_files = ['testData\\Kundur-2area\\kunder_2area_ver30.raw','testData\\Kundur-2area\\kunder_2area.dyr']
 # Need to use the following way to define a String array in Python for Py4J
 

@@ -2,19 +2,14 @@ from py4j.java_gateway import (JavaGateway, GatewayParameters)
 
 
 import os
-folder_dir = 'C:\\Users\huan289\\git\\deepgrid\\DeepGrid'
 
 
 java_port = 25333
-# gateway = JavaGateway(
-#     gateway_parameters=GatewayParameters(port = java_port, auto_convert=True)
-#     )
 
+a = os.path.abspath(os.path.dirname(__file__))
 
+folder_dir = a[:-7]
 
-# case_files = ['testData\\Kundur-2area\\kunder_2area_ver30.raw','testData\\Kundur-2area\\kunder_2area.dyr']
-# Need to use the following way to define a String array in Python for Py4J
-# case_files_array = gateway.new_array(gateway.jvm.String, 2)
 case_files_array = []
 
 case_files_array.append(folder_dir +'\\testData\\Kundur-2area\\kunder_2area_ver30.raw')

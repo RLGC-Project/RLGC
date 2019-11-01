@@ -12,6 +12,9 @@ import java.util.logging.Level;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
+import javax.swing.plaf.basic.BasicSliderUI.ActionScroller;
+
+import org.apache.commons.math3.analysis.function.Atan;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.ode.FirstOrderConverter;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
@@ -383,8 +386,10 @@ public class IpssPyGateway {
 				double changeFraction = this.actualactionValuesAry[i];
 				
 				//check invalid actions
-				if(Math.abs(changeFraction) <1.0E-6 && this.agentActionValuesAry[i] > 0.5){
-					sumOfInvalidActions++;
+				if (this.agentActionValuesAry!=null) {
+					if(Math.abs(changeFraction) <1.0E-8 && Math.abs(this.agentActionValuesAry[i]) > 1.0E-4){
+						sumOfInvalidActions++;
+					}
 				}
 				
 				i++;
@@ -393,7 +398,7 @@ public class IpssPyGateway {
 					sumOfLoadShedPU += initTotalLoadPU*Math.abs(changeFraction); // for load shedding, the changeFraction is negative
 					
 					//IpssLogger.getLogger().info("Bus, initLoad, shedLoadFraction = "+loadBusId+", "+initTotalLoadPU+", "+changeFraction);
-					System.out.println("Bus, initLoad, shedLoadFraction = "+loadBusId+", "+initTotalLoadPU+", "+changeFraction);
+					// System.out.println("Bus, initLoad, shedLoadFraction = "+loadBusId+", "+initTotalLoadPU+", "+changeFraction);
 				}
 				
 			}
@@ -518,22 +523,27 @@ public class IpssPyGateway {
 		
 		
 		
-		this.agentActionValuesAry = actionValueAry;
+		this.agentActionValuesAry = Arrays.copyOf(actionValueAry, actionValueAry.length);
 		
 		if(this.agentActionValuesAry!=null) {
 			if(this.dstabAlgo.getSimuTime() < this.faultStartTime){
 				for(int i = 0; i <this.agentActionValuesAry.length;i++){
-					if( Math.abs(this.agentActionValuesAry[i]) > 0.1){ // non-zero values will be detected
+					if( Math.abs(this.agentActionValuesAry[i]) > 0.0){ // non-zero values will be detected
 						this.isPreFaultActionApplied = true;
 						
 						this.agentActionValuesAry[i] = 0.0; // force it to zero; invalid actions will not be applied
+						
+						System.out.println("Pre-fault(event) action: index, value = "+i+", "+actionValueAry[i]);
 					}
 				}
 			}
-	
-		
+		// 
+		System.out.println ("Apply actions at time ="+this.dstabAlgo.getSimuTime());
 		applyAction(this.agentActionValuesAry, actionType, stepTimeInSec);
 		}
+		
+		if (this.isPreFaultActionApplied)
+			IpssLogger.getLogger().warning("To help training, any non-zero action being applied prior to the fault(event) time is regarded as invalid, thus will be forced to zero and not applied to simulator!\n"); 
 		
 		for(int i = 0; i<internalSteps; i++) {
 			if(dstabAlgo.getSimuTime()<dstabAlgo.getTotalSimuTimeSec()) {
@@ -584,6 +594,9 @@ public class IpssPyGateway {
     	this.faultStartTime = faultStartTime;
     	this.faultDuration = faultDuration;
     	
+    	this.isActionApplied = false;
+    	this.agentActionValuesAry = null;
+    	
     	
     	//TODO which parameter to apply the randomization? 
     	// fault type, fault location, scenario (case index)
@@ -623,8 +636,6 @@ public class IpssPyGateway {
 		adapter.parseInputFile(NetType.DStabNet, caseFiles);
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
-		//System.out.println(parser.toXmlDoc());
-
 		
 		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
 		if (!new ODMDStabParserMapper(msg)
@@ -796,32 +807,6 @@ public class IpssPyGateway {
 
 	
 	private boolean applyAction(double[] actionValueAry, String actionValueType, double duration) {
-		
-		
-		// Action a = mapGymActionToIpssAction(gymAction, actionType);
-//		if(gymAction!=null) {
-//			if(gymActionValueType.equalsIgnoreCase("discrete")) {
-//				
-//				Integer action  = Integer.valueOf(gymAction);
-//				
-//				if(action>0) {
-//					//apply fault to mimic the breaking resistor
-//					
-//					Complex faultZ = new Complex(rlConfigBean.brakeResistorPU,0);
-//					double faultStartingTime = dstabAlgo.getSimuTime();
-//					dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(actionBusId,this.dsNet,SimpleFaultCode.GROUND_3P, faultZ, null,faultStartingTime,duration),"Action@Step-"+stepNum+"@"+faultBusId);
-//					isActionApplied = true;   
-//				}
-//				else{ //no action
-//					
-//				}
-//				
-//			}
-//			else {
-//				throw new Error("Only descrete action type is supported for now!");
-//			}
-//		}
-//		
 		
 		
 		if(actionValueAry!=null) {	
@@ -1044,6 +1029,14 @@ public class IpssPyGateway {
 		return this.rlConfigBean.faultDurationCandidates;
 		
 	}
+	
+	public String getActionSpaceType() {
+		return this.rlConfigBean.actionSpaceType;
+	}
+	
+	public double[][] getActionValueRanges(){
+		return this.rlConfigBean.actionValueRanges;
+	}
 
 	
 	
@@ -1053,7 +1046,7 @@ public class IpssPyGateway {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		IpssLogger.getLogger().setLevel(Level.SEVERE);
+		IpssLogger.getLogger().setLevel(Level.INFO);
 		IpssPyGateway app = new IpssPyGateway();
 		// app is now the gateway.entry_point
 		int port = 25333;
@@ -1064,7 +1057,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.73, built on 07/27/2019");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.80, built on 11/1/2019");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

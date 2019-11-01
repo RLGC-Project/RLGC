@@ -1,0 +1,52 @@
+{
+	"version" : 2,
+	"environmentName": "IEEE39_FIDVR_LoadShedding_Continuous_Action",
+	"studyCaseFolder": "testData\\IEEE39",
+	
+	"observationStateTypes": ["voltageMag"],
+	
+	"observationScopeType": "Bus",
+			
+	"observationScopeAry": ["Bus4","Bus504","Bus7","Bus507","Bus8","Bus508","Bus18","Bus518"],
+	
+	"historyObservationSize": 10,
+	
+	"actionTypes": ["LoadShed"],
+	
+	"actionScopeType":"Bus",
+	
+	"actionScopeAry":["Bus504","Bus507", "Bus518"],
+	
+	"envStepTimeInSec": 0.1,
+	
+	"actionLevels":[0.0, -0.2],
+	
+    "unstableReward": -1000,
+    
+    "actionPenalty": 150.0,
+    
+    "invalidActionPenalty": 3.0,
+    
+    "preFaultActionPenalty":100,
+    
+    "observationWeight":260.0,
+    
+    "includeActionStatusInObservations": false,
+
+    "minVoltRecoveryLevel":0.95, 
+            
+    "maxVoltRecoveryTime":4.0,
+	
+    "faultBusCandidates": ["Bus4"],
+	
+    "faultStartTimeCandidates": [0.05],
+	
+    "faultDurationCandidates": [0.0, 0.05, 0.08],
+	
+    
+    "actionSpaceType":"continuous",
+    
+    "actionValueRanges": [[-1, 0], [-1, 0], [-1, 0]]
+    
+	
+}

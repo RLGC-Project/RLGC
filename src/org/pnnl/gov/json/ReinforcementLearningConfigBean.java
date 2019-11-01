@@ -11,6 +11,16 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
 	public ReinforcementLearningConfigBean() {
 		
 	}
+	
+   //----------Below are added to version 2------------------//
+	public int version = 1; //include version info to make the configuration backward compatible 
+    public String actionSpaceType = "discrete"; // discrete or continuous 
+    public double[][]  actionValueRanges = {{}}; // { {min1,max1}, {min2, max2},..,{min_N, max_N}} for N continuous actions
+    
+	
+	
+	//---------Below are for version 1------------------
+	
 	public String environmentName = ""; // implemented environment
 	
 	public String studyCaseFolder = "";
@@ -37,7 +47,7 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
 	
 	public double brakeResistorPU = 0.0;// in pu
 	
-	public double[] actionLevels = {0, 1};
+	public double[] actionLevels = {0, 1}; // for defining discrete actions
 	
     public double unstableReward = -1000; // default for kundur-2area case
     
@@ -60,4 +70,5 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
     public double[] faultStartTimeCandidates = {0.05};
     public double[] faultDurationCandidates = {0.0, 0.05, 0.08};
     
+ 
 }

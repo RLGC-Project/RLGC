@@ -44,13 +44,29 @@ public class LoadChangeActionProcessor extends AbstractActionProcessor implement
 			int i = 0;
 			for(String busId:this.actionScopeBusAry){
 				
-				double changeFraction = this.getActionLevels()[(int)actionValueAry[i]];
+				double changeFraction = 0.0;
+				
+				if(actionValueType.length() == 0 || actionValueType.equalsIgnoreCase("discrete")) //by default the type is discrete
+					changeFraction = this.getActionLevels()[(int)actionValueAry[i]];
+				
+				else if (actionValueType.equalsIgnoreCase("continuous")) {
+					changeFraction = actionValueAry[i];
+				}
+				else {
+					throw new Error("The <actionValueType> attribute has to be either 'discrete' or 'continuous'");
+				}
+				
+
 				
 				if(this.remainLoadFraction[i]+changeFraction <0.0){
 					changeFraction = 0.0 - this.remainLoadFraction[i];
-					IpssLogger.getLogger().severe("change fraction for bus =" +busId+" is large than remaining fraction, it has been changed to : "+changeFraction);
+					IpssLogger.getLogger().warning("The change fraction for bus =" +busId+" is large than remaining fraction, it has been changed to : "+changeFraction);
 				}
+				
+				System.out.println("Bus, remaining fraction, actual Load Shedding fraction = "+busId+", "+this.remainLoadFraction[i]+", "+changeFraction);
+				
 				this.remainLoadFraction[i] = this.remainLoadFraction[i]+changeFraction;
+				
 				
 				
 			    DStabBus bus = this.dstabNet.getBus(busId);
@@ -64,7 +80,7 @@ public class LoadChangeActionProcessor extends AbstractActionProcessor implement
 				
 			    
 			    if (changeFraction==0.0){
-			    	IpssLogger.getLogger().info("Action at " +busId +" is NO-OP.");
+			    	IpssLogger.getLogger().info("Action at " +busId +" is NO-operation.");
 			    	i++;
 			    	continue;
 			    }

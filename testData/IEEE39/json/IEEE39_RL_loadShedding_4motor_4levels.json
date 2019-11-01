@@ -30,7 +30,15 @@
     
     "observationWeight":1.0,
     
-    "includeActionStatusInObservations": true
+    "includeActionStatusInObservations": true,
+    
+    "minVoltRecoveryLevel":0.95, 
+            
+    "maxVoltRecoveryTime":3.0,
+    
+    "faultBusCandidates": ["Bus4", "Bus15", "Bus21"],
+    "faultStartTimeCandidates": [0.05],
+    "faultDurationCandidates": [0.0, 0.05, 0.08]
     
     
 	
