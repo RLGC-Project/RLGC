@@ -129,11 +129,35 @@ public class IpssPyGateway {
 	 */
 	public int[] initStudyCase(String[] caseFiles,  String dynSimConfigFile, String rlConfigFile) throws IOException {
 		
-		caseInputFiles =caseFiles;
+		caseInputFiles = new String[3];
 		dynSimConfigJsonFile=dynSimConfigFile;
 		rlConfigJsonFile = rlConfigFile;
 		
 		dstabBean  = BaseJSONBean.toBean(dynSimConfigFile, DstabRunConfigBean.class);
+		
+		if(caseFiles!=null)
+			caseInputFiles =caseFiles;
+		else if (dstabBean!=null) {
+			boolean hasSeqFile = false;
+			caseInputFiles[0] = dstabBean.acscConfigBean.runAclfConfig.aclfCaseFileName;
+			
+			if(dstabBean.acscConfigBean.seqFileName.length()>0) {
+				caseInputFiles[1] = dstabBean.acscConfigBean.seqFileName;
+				hasSeqFile =true;
+			}
+			
+			if(dstabBean.dynamicFileName.length()>0) {
+				
+				if(hasSeqFile) {
+					caseInputFiles[2] = dstabBean.dynamicFileName;
+				}
+				else {
+					caseInputFiles[1] = dstabBean.dynamicFileName;
+				    caseInputFiles = Arrays.copyOfRange(caseInputFiles, 0,2);
+				}
+			}
+			
+		}
 		
 		rlConfigBean = BaseJSONBean.toBean( rlConfigFile,ReinforcementLearningConfigBean.class);
 		
@@ -143,7 +167,7 @@ public class IpssPyGateway {
 		
 		//TODO if caseFiles is not defined, search in the <study case folder> (defined in the rlConfigJsonFile) and find the the first eligible case file.
 		
-		boolean initFlag = loadStudyCase(caseFiles);
+		boolean initFlag = loadStudyCase(caseInputFiles);
 		
 		if(initFlag) {
 			
@@ -632,7 +656,7 @@ public class IpssPyGateway {
 		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		
-		
+		System.out.println("case files:"+Arrays.toString(caseFiles));
 		adapter.parseInputFile(NetType.DStabNet, caseFiles);
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
@@ -1049,7 +1073,7 @@ public class IpssPyGateway {
 		IpssLogger.getLogger().setLevel(Level.INFO);
 		IpssPyGateway app = new IpssPyGateway();
 		// app is now the gateway.entry_point
-		int port = 25333;
+		int port = 25332;
 		
 		if (args.length>0) {
 			port = Integer.valueOf(args[0]);
@@ -1057,7 +1081,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.80, built on 11/1/2019");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.82, built on 12/26/2019");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

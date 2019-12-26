@@ -13,8 +13,7 @@ import matplotlib.pyplot as plt
 from gym import wrappers
 from datetime import datetime
 import time
-#from q_learning_bins import plot_running_avg
-from PowerDynSimEnvDef_v3 import PowerDynSimEnv
+from PowerDynSimEnvDef_v5 import PowerDynSimEnv
 
 
 from baselines import deepq
@@ -23,28 +22,23 @@ import baselines.common.tf_util as U
 
 np.random.seed(19)
 
-# create
+# config the RLGC Java Sever
 java_port = 25002
-
-gateway = JavaGateway(gateway_parameters=GatewayParameters(port = java_port, auto_convert=True))
-ipss_app = gateway.entry_point
-
+jar_file = '/lib/RLGCJavaServer0.82.jar'
 
 a = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 repo_path = a[:-7]
-case_files_array = gateway.new_array(gateway.jvm.String, 2)
+jar_path = repo_path + jar_file
 
-case_files_array[0] = repo_path + '/testData/IEEE39/IEEE39bus_multiloads_xfmr4_smallX_v30.raw'
+case_files_array =[]
 
-#case_files_array[1] = repo_path + '/testData/IEEE39/IEEE39bus_4motorw_4AC.dyr'
-#case_files_array[1] = repo_path + '/testData/IEEE39/IEEE39bus_1AC.dyr'
-case_files_array[1] = repo_path + '/testData/IEEE39/IEEE39bus_3AC.dyr'
+case_files_array.append(repo_path + '/testData/IEEE39/IEEE39bus_multiloads_xfmr4_smallX_v30.raw')
+case_files_array.append(repo_path + '/testData/IEEE39/IEEE39bus_3AC.dyr')
 
+# configuration files for dynamic simulation and RL
 dyn_config_file = repo_path + '/testData/IEEE39/json/IEEE39_dyn_config.json'
-
-
-#rl_config_file = repo_path + '/testData/IEEE39/json/IEEE39_RL_loadShedding_config.json'
-#rl_config_file = repo_path + '/testData/IEEE39/json/IEEE39_RL_loadShedding_4motor_4levels.json'
 rl_config_file = repo_path + '/testData/IEEE39/json/IEEE39_RL_loadShedding_3motor_2levels.json'
 
 
@@ -54,10 +48,7 @@ savedModel= "./trainedModels"
 model_name = "IEEE39_multistep_obs11_randftd3_randbus3_3motor2action_prenull"
 
 def callback(lcl, glb):
-    # stop training if reward exceeds -30
-    #is_solved = lcl['t'] > 100 and sum(lcl['episode_rewards'][-101:-1]) / 100 >= -30.0
-    #return is_solved
-    #episodes = 0
+
     if lcl['t'] > 0:
         step_rewards.append(lcl['episode_rewards'])
      #  step_actions.append(lcl['action'])
@@ -90,7 +81,7 @@ def train(learning_rate, env, model_path):
         callback=callback,
         load_path=model_path
     )
-    print("Saving final model to power_model_multistep_581_585_lr_%s.pkl" % (str(learning_rate)))
+    print("Saving final model to: ",savedModel + "/" + model_name + "_lr_%s_100w.pkl" % (str(learning_rate)))
     act.save(savedModel + "/" + model_name + "_lr_%s_100w.pkl" % (str(learning_rate)))
 #aa._act_params
 
@@ -114,8 +105,7 @@ import time
 start = time.time()
 dataname = "multistep_obs11_randftd3_randbus3_3motor2action_prenull_100w"
 
-action_cnts = [2,2,2]
-env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file, java_port, cnts=action_cnts)
+env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file, jar_path, java_port)
 
 #for ll in [0.0001, 0.0005, 0.00005]:
 for ll in [0.00005]:
@@ -133,6 +123,7 @@ for ll in [0.00005]:
 
     train(ll, env, model_path)
 
+    env.close_connection()
 
     np.save(os.path.join(storedData, "step_rewards_lr_%s_" % str(ll) + dataname), np.array(step_rewards))
     np.save(os.path.join(storedData, "step_actions_lr_%s_" % str(ll) + dataname), np.array(step_actions))

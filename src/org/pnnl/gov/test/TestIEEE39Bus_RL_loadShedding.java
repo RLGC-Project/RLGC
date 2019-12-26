@@ -26,11 +26,11 @@ public class TestIEEE39Bus_RL_loadShedding {
 		
 		String[] caseFiles = new String[]{
 				"testData\\IEEE39\\IEEE39bus_multiloads_xfmr4_smallX_v30.raw",
-				"testData\\IEEE39\\IEEE39bus_4motorw_4AC.dyr"//IEEE39bus.dyr"
+				"testData\\IEEE39\\IEEE39bus_3AC.dyr"//IEEE39bus.dyr"
 				};
 		
 		String dynSimConfigFile = "testData\\IEEE39\\json\\IEEE39_dyn_config.json"; // define dynamic simulation and monitoring
-		String rlConfigJsonFile = "testData\\IEEE39\\json\\IEEE39_RL_loadShedding_config.json";
+		String rlConfigJsonFile = "testData\\IEEE39\\json\\IEEE39_RL_loadShedding_3motor_3levels.json";
 		
 		int[] ob_act_space_dim = null;
 		
@@ -186,7 +186,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 		System.out.println("total rewards ="+app.getTotalRewards());
 	}
 	
-	//@Test
+	@Test
 	public void test_IEEE39_RL_3motor_3actionLevels() {
 		IpssLogger.getLogger().setLevel(Level.ALL);
 	    IpssPyGateway app = new IpssPyGateway();
@@ -216,35 +216,37 @@ public class TestIEEE39Bus_RL_loadShedding {
 			e.printStackTrace();
 		}
 		
-		//reset to mimic the case
-		app.reset(0, 3, 0.05, 0.08);
-		
-		
-		double[][] obs_ary = app.getEnvObversations();
-//		assertTrue(obs_ary.length == 4);
-//		assertTrue(obs_ary[0].length == 5);
-		
-		System.out.println(Arrays.toString(obs_ary[0]));
-		
-
-		
-		while(!app.isSimulationDone()) {
+		for(int i=0;i<10000;i++) {
+			//reset to mimic the case
+			app.reset(0, 3, 0.05, 0.08);
 			
-			if(app.getDStabAlgo().getSimuTime()>1.09 && app.getDStabAlgo().getSimuTime()<-1.31){
-			    app.nextStepDynSim(0.1, new double[]{0,2,0}, "discrete"); // apply load shedding action to bus 504
+			
+			double[][] obs_ary = app.getEnvObversations();
+	//		assertTrue(obs_ary.length == 4);
+	//		assertTrue(obs_ary[0].length == 5);
+			
+			System.out.println(Arrays.toString(obs_ary[0]));
+			
+	
+			
+			while(!app.isSimulationDone()) {
+				
+				if(app.getDStabAlgo().getSimuTime()>1.09 && app.getDStabAlgo().getSimuTime()<-1.31){
+				    app.nextStepDynSim(0.1, new double[]{0,2,0}, "discrete"); // apply load shedding action to bus 504
+				}
+				else if(app.getDStabAlgo().getSimuTime()>0.09 && app.getDStabAlgo().getSimuTime()<-0.5){
+				    app.nextStepDynSim(0.1, new double[]{0,1,1}, "discrete"); // apply load shedding action to bus 504
+				} 
+				else
+					app.nextStepDynSim(0.1, new double[]{0.0,0.0,0.0}, "discrete");
+				
+				
+				app.getReward();
+						
+				if(app.getDStabAlgo().getSimuTime()<0.30)
+				    System.out.println(Arrays.deepToString(app.getEnvObversations()));
+				
 			}
-			else if(app.getDStabAlgo().getSimuTime()>0.09 && app.getDStabAlgo().getSimuTime()<-0.5){
-			    app.nextStepDynSim(0.1, new double[]{0,1,1}, "discrete"); // apply load shedding action to bus 504
-			} 
-			else
-				app.nextStepDynSim(0.1, new double[]{0.0,0.0,0.0}, "discrete");
-			
-			
-			app.getReward();
-					
-			if(app.getDStabAlgo().getSimuTime()<0.30)
-			    System.out.println(Arrays.deepToString(app.getEnvObversations()));
-			
 		}
 		
 		
@@ -257,7 +259,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 		System.out.println("total rewards ="+app.getTotalRewards());
 	}
 	
-	@Test
+	//@Test
 	public void test_IEEE39_RL_3motor_3actionLevels_80Loading() {
 		
 		IpssLogger.getLogger().setLevel(Level.ALL);
@@ -329,7 +331,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 		System.out.println("total rewards ="+app.getTotalRewards());
 	}
 	
-	@Test
+	//@Test
 	public void test_IEEE39_RL_3motor_3actionLevels_UVLS() {
 		
 		IpssLogger.getLogger().setLevel(Level.ALL);

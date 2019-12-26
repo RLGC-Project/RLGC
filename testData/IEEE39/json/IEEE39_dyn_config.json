@@ -1,8 +1,8 @@
 {
-	"dynamicFileName": "testData\\IEEE39\\IEEE39bus_4motorw_4AC.dyr",
+	"dynamicFileName": "C:\\Users\\huan289\\git\\RLGC\\testData\\IEEE39\\IEEE39bus_3AC.dyr",
 	"dstabOutputFileName": "",
 	"dynMethod": "MODIFIED_EULER",
-	"totalSimuTimeSec": 8.0,
+	"totalSimuTimeSec": 10.0,
 	"simuTimeStepSec": 0.002,
 	"eventStartTimeSec": 1.0,
 	"eventDurationSec": 0.08,
@@ -15,7 +15,7 @@
 		"acscOutputFileName": "",
 		"runAclf": false,
 		"runAclfConfig": {
-			"aclfCaseFileName": "testData\\IEEE39\\IEEE39bus_multiloads_xfmr4_smallX_v30.raw",
+			"aclfCaseFileName": "C:\\Users\\huan289\\git\\RLGC\\testData\\IEEE39\\IEEE39bus_multiloads_xfmr4_smallX_v30.raw",
 			"aclfOutputFileName": "",
 			"format": "PSSE",
 			"version": "PSSE_30",
@@ -37,7 +37,7 @@
 			"re": 0.0,
 			"im": 0.0
 		},
-		"faultBusId": "Bus15",
+		"faultBusId": "Bus4",
 		"faultBranchFromId": "",
 		"faultBranchToId": "",
 		"faultBranchCirId": "",

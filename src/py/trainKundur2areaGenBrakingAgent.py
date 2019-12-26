@@ -12,9 +12,8 @@ import matplotlib.pyplot as plt
 from gym import wrappers
 from datetime import datetime
 import time
-#from q_learning_bins import plot_running_avg
-#from PowerDynSimEnvDefX import PowerDynSimEnv
-from PowerDynSimEnvDef_v3 import PowerDynSimEnv
+
+from PowerDynSimEnvDef_v5 import PowerDynSimEnv
 
 
 from baselines import deepq
@@ -24,38 +23,39 @@ import baselines.common.tf_util as U
 
 np.random.seed(19)
 
+# config the RLGC Java Sever
+java_port = 25003
+jar_file = '/lib/RLGCJavaServer0.82.jar'
 
 # This is to fix the issue of "ModuleNotFoundError" below
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))  
 
-from PowerDynSimEnvDef_v3 import PowerDynSimEnv
 
+a = os.path.abspath(os.path.dirname(__file__))
+folder_dir = a[:-7]
 
-folder_dir = 'C:\\Users\huan289\\git\\RLGC'
+jar_path = folder_dir + jar_file
 
 case_files_array = []
 
-case_files_array.append(folder_dir +'\\testData\\Kundur-2area\\kunder_2area_ver30.raw')
-case_files_array.append(folder_dir+'\\testData\\Kundur-2area\\kunder_2area.dyr')
+case_files_array.append(folder_dir +'/testData/Kundur-2area/kunder_2area_ver30.raw')
+case_files_array.append(folder_dir+'/testData/Kundur-2area/kunder_2area.dyr')
 
-dyn_config_file = folder_dir+'\\testData\\Kundur-2area\\json\\kundur2area_dyn_config.json'
+dyn_config_file = folder_dir+'/testData/Kundur-2area/json/kundur2area_dyn_config.json'
 
-rl_config_file = folder_dir+'\\testData\\Kundur-2area\\json\\kundur2area_RL_config_multiStepObsv.json'
+rl_config_file = folder_dir+'/testData/Kundur-2area/json/kundur2area_RL_config_multiStepObsv.json'
 
 
-java_port = 25333
-
-action_levels = [2]
-env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,java_port,action_levels)
+env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path,java_port)
 
 
 
 
-storedData = "./storedData581to585"
+storedData = "./storedData"
 
 
 savedModel= "./previous_model"
-model_name = "power_model_multistep_" + storedData[-8:]
+model_name = "kundur2area_multistep_581to585_bus2_90w"
 
 def callback(lcl, glb):
     # stop training if reward exceeds -30
@@ -79,14 +79,14 @@ def main(learning_rate):
     tf.reset_default_graph()    # to avoid the conflict with the existing parameters, but this is not suggested for reuse parameters
     graph = tf.get_default_graph()
     #print(graph.get_operations())
-    env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file, java_port)
-    #model = deepq.models.mlp([128,128])
+    env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path, java_port)
+
 
     act = deepq.learn(
         env,
         network=models.mlp(num_layers=2, num_hidden=128,activation=tf.nn.relu),
         lr=learning_rate,
-        total_timesteps=900000,
+        total_timesteps=900,  ## this small number is for testing/demo only, please increase this number to 900000 for real training.
         buffer_size=50000,
         checkpoint_freq = 1000,
         exploration_fraction=0.1,
@@ -94,7 +94,7 @@ def main(learning_rate):
         print_freq=10,
         callback=callback
     )
-    print("Saving final model to power_model_multistep498_508_lr_%s_90w.pkl" % (str(learning_rate)))
+    print("Saving final model to: "+savedModel + "/" + model_name + "_lr_%s_90w.pkl" % (str(learning_rate)))
     act.save(savedModel + "/" + model_name + "_lr_%s_90w.pkl" % (str(learning_rate)))
 
 #aa._act_params

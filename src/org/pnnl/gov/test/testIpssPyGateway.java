@@ -10,7 +10,6 @@ import org.interpss.util.FileUtil;
 import org.junit.Test;
 import org.pnnl.gov.pss_gateway.IpssPyGateway;
 
-import com.interpss.core.aclf.adj.impl.i;
 
 public class testIpssPyGateway {
 	
@@ -319,7 +318,7 @@ public class testIpssPyGateway {
 		
 	}
 	
-	@Test
+	//@Test
 	public void test_loadShedding_continuous_function() {
 		IpssPyGateway app = new IpssPyGateway();
 		
@@ -422,6 +421,125 @@ public class testIpssPyGateway {
 		app.nextStepDynSim(stepTimeInSec, new double[]{0.0,0.0,-1.0E-3}, "continuous");
 		double reward7=app.getReward();
 		System.out.println(" One loadshed action, reward = "+reward7);
+		
+		// output the voltage to check if actions are applied consecutively in the above two steps
+		System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getBusVoltTable()));
+		
+		// check the rewards
+		
+		
+		// check reset
+		app.reset(0,0,0,0);
+		System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getBusVoltTable()));
+		System.out.print("reward after reset = "+app.getReward());
+		assertTrue(NumericUtil.equals(app.getReward(), 0,1.0E-6));
+		
+		
+	}
+	
+	
+	@Test
+	public void test_loadShedding_continuous_function_usingConfigFiles() {
+		IpssPyGateway app = new IpssPyGateway();
+		
+		String[] caseFiles = null;
+		
+		String dynSimConfigFile = "testData\\IEEE39\\json\\IEEE39_dyn_config.json"; // define dynamic simulation and monitoring
+		String rlConfigJsonFile = "testData\\IEEE39\\json\\IEEE39_RL_loadShedding_3motor_continuous.json";
+		
+		int[] ob_act_space_dim = null;
+		
+		try {
+			ob_act_space_dim = app.initStudyCase(caseFiles, dynSimConfigFile, rlConfigJsonFile);
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+		
+		//check environment name
+		assertTrue(app.getRLConfigBean().environmentName.equalsIgnoreCase("IEEE39_FIDVR_LoadShedding_Continuous_Action"));
+		
+		
+		// check whether the action space and the observation space are created, and their dimensions
+		assertTrue(ob_act_space_dim!=null);
+		
+		int ob_space_dim = ob_act_space_dim[1];
+		int act_space_dim = ob_act_space_dim[2];
+		
+		System.out.println("ob_act_space_dim: " +Arrays.toString(ob_act_space_dim));
+//		assertTrue(ob_space_dim ==8*2*1);   //observation space; 8 buses, 2 observations for each machine
+//		assertTrue(act_space_dim ==1);      //action space
+		
+		// check the environment observation after the initialization 
+		System.out.println(Arrays.toString(app.getEnvObversations()));
+		//[1.0, 1.0, 1.0, 1.0, 0.6530790652351373, 0.45873956913178054, 0.5579368433471502, 0.9172826085024869]
+
+		
+		//run one environmentStep without action
+		
+		double stepTimeInSec = 0.1;
+		app.nextStepDynSim(stepTimeInSec, new double[]{0,0,0}, "continuous");
+		
+		
+		// check the internal dynamic simulation time
+		System.out.println("sim time = "+app.getDStabAlgo().getSimuTime());
+		//assertTrue(NumericUtil.equals(app.getDStabAlgo().getSimuTime(),0.1,1.0E-6));
+		
+		
+		// output the observations
+		System.out.println(Arrays.toString(app.getEnvObversations()));
+		
+		// check the reward, it should be zero
+		System.out.println("at 0.1s, no action, reward = "+app.getReward());
+		assertTrue(NumericUtil.equals(app.getReward(), 0,1.0E-6));
+		
+		
+		// run one environmentStep with one brake action
+		app.nextStepDynSim(stepTimeInSec, new double[]{-1.0,0,0}, "continuous");
+		//System.out.println(Arrays.toString(app.getEnvironmentObversations()));
+		
+		//calculate the rewards
+		System.out.println("at 0.2s, 1 pre-fault loadshed action, reward = "+app.getReward());
+		assertTrue(NumericUtil.equals(app.getReward(), -100.0,1.0E-2));
+		
+		
+		// run one environmentStep without any action
+		for(int i = 0;i<10;i++) {
+			System.out.println("sim time = "+app.getDStabAlgo().getSimuTime());
+			app.nextStepDynSim(stepTimeInSec, new double[]{0.0,0,0}, "continuous");
+			double reward3=app.getReward();
+			System.out.println("no action, reward = "+reward3);
+			assertTrue(NumericUtil.equals(reward3, 0.0,1.0E-2));
+		}
+		
+		// run one environmentStep with one brake action
+		System.out.println("sim time = "+app.getDStabAlgo().getSimuTime());
+		app.nextStepDynSim(stepTimeInSec,new double[]{0,-1.0,0}, "continuous");
+		double reward4=app.getReward();
+		System.out.println(" 1 post-fault loadshed action, reward = "+reward4);
+		assertTrue(NumericUtil.equals(reward4, -350.7,1.0E-2));
+		
+		
+		// run one environmentStep with invalid action
+		System.out.println("sim time = "+app.getDStabAlgo().getSimuTime());
+		app.nextStepDynSim(stepTimeInSec, new double[]{0.0,-0.5,0}, "continuous");
+		double reward5=app.getReward();
+		System.out.println(" One invalid action, reward = "+reward5);
+		assertTrue(NumericUtil.equals(reward5, -3.0,1.0E-2));
+		
+		
+		System.out.println("sim time = "+app.getDStabAlgo().getSimuTime());
+		app.nextStepDynSim(stepTimeInSec, new double[]{0.0,0.0,-1.0}, "continuous");
+		double reward6=app.getReward();
+		System.out.println(" One loadshed action, reward = "+reward6);
+		assertTrue(NumericUtil.equals(reward6, -244.8,1.0E-1));
+		
+		System.out.println("sim time = "+app.getDStabAlgo().getSimuTime());
+		app.nextStepDynSim(stepTimeInSec, new double[]{0.0,0.0,-1.0E-3}, "continuous");
+		double reward7=app.getReward();
+		// Invalid action as all load on the bus 518 has been shed in the last step
+		System.out.println(" One loadshed action, reward = "+reward7);
+		assertTrue(NumericUtil.equals(reward7, -3.0,1.0E-1));  
 		
 		// output the voltage to check if actions are applied consecutively in the above two steps
 		System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getBusVoltTable()));

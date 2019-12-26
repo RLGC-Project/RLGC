@@ -123,8 +123,10 @@ class PowerDynSimEnv(gym.Env):
 
         from gym import spaces
 
-        _case_files = transfer2JavaStringAry(self.a_gateway,case_files)
-      
+        if(case_files is not None):
+            _case_files = transfer2JavaStringAry(self.a_gateway,case_files)
+        else:
+            _case_files = None
 
         #initialize the power system simulation service
 

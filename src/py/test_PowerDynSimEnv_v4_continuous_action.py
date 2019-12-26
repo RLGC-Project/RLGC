@@ -1,10 +1,23 @@
 from py4j.java_gateway import (JavaGateway, GatewayParameters)
+from subprocess import call, Popen, PIPE
+
+import os, time
 
 
-import os
+java_port = 25335
 
+jarfile = r"C:\Users\huan289\git\RLGC\lib\RLGCJavaServer0.81.jar"
+P = Popen(["java", "-jar", jarfile, str(java_port)],close_fds=True)
+print ("Java server started with PID:",P.pid)
+s = True
+while s:
+    try:
+        gateway = JavaGateway(gateway_parameters=GatewayParameters(port = java_port, auto_convert=True))
+        ipss_app = gateway.entry_point
 
-java_port = 25333
+        s = False
+    except:
+        time.sleep(0.1)
 
 a = os.path.abspath(os.path.dirname(__file__))
 
@@ -36,7 +49,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))  
 
 from PowerDynSimEnvDef_v4 import PowerDynSimEnv
-env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,java_port)
+env = PowerDynSimEnv(None,dyn_config_file,rl_config_file,java_port)
 
 
 for i in range(15):
@@ -50,4 +63,5 @@ print('test completed')
 env.close_connection()
 print('connection with Ipss Server is closed')
 
+P.terminate()
              
