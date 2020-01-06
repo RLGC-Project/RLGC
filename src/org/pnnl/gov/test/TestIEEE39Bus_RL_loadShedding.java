@@ -20,7 +20,7 @@ import com.interpss.dstab.DStabilityNetwork;
 public class TestIEEE39Bus_RL_loadShedding {
 	
 	
-	//@Test
+	@Test
 	public void test_noAction_BaseLine() {
 	    IpssPyGateway app = new IpssPyGateway();
 		
@@ -42,9 +42,10 @@ public class TestIEEE39Bus_RL_loadShedding {
 		}
 		
 		while(app.getDStabAlgo().getSimuTime()<app.getDStabAlgo().getTotalSimuTimeSec()) {
-			app.getDStabAlgo().solveDEqnStep(true);
-			if(app.getDStabAlgo().getSimuTime()>10.0)
-				break;
+//			app.getDStabAlgo().solveDEqnStep(true);
+//			if(app.getDStabAlgo().getSimuTime()>10.0)
+//				break;
+			app.nextStepDynSim(0.1, new double[]{0.0, 0, 0}, "discrete");
 		}
 		
 //		System.out.println("\n speed = \n"+app.getStateMonitor().toCSVString(app.getStateMonitor().getMachSpeedTable()));
@@ -52,6 +53,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 		//System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
 		//FileUtil.writeText2File("C:\\Qiuhua\\DeepScienceLDRD\\output\\mach_angle_refbus1.csv",app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
 	
+		System.out.println("total rewards ="+app.getTotalRewards());
 	}
 	
 	//@Test
@@ -216,7 +218,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 			e.printStackTrace();
 		}
 		
-		for(int i=0;i<10000;i++) {
+//		for(int i=0;i<10000;i++) {
 			//reset to mimic the case
 			app.reset(0, 3, 0.05, 0.08);
 			
@@ -231,10 +233,10 @@ public class TestIEEE39Bus_RL_loadShedding {
 			
 			while(!app.isSimulationDone()) {
 				
-				if(app.getDStabAlgo().getSimuTime()>1.09 && app.getDStabAlgo().getSimuTime()<-1.31){
+				if(app.getDStabAlgo().getSimuTime()>1.09 && app.getDStabAlgo().getSimuTime()<1.31){
 				    app.nextStepDynSim(0.1, new double[]{0,2,0}, "discrete"); // apply load shedding action to bus 504
 				}
-				else if(app.getDStabAlgo().getSimuTime()>0.09 && app.getDStabAlgo().getSimuTime()<-0.5){
+				else if(app.getDStabAlgo().getSimuTime()>0.09 && app.getDStabAlgo().getSimuTime()<0.5){
 				    app.nextStepDynSim(0.1, new double[]{0,1,1}, "discrete"); // apply load shedding action to bus 504
 				} 
 				else
@@ -247,7 +249,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 				    System.out.println(Arrays.deepToString(app.getEnvObversations()));
 				
 			}
-		}
+//		}
 		
 		
 		
