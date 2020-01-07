@@ -259,8 +259,8 @@ public class IpssPyGateway {
 		//read the rlConfigFile to determine the dimension of the observation and action spaces
 		int[] observation_space_dim = initObsverationSpace();
 		
-		System.out.println("Observed states:\n"+Arrays.toString(getEnvObversationNames()));
-		System.out.println("Initial values of the observed states:\n"+Arrays.toString(observationAry));
+		IpssLogger.getLogger().info("Observed states:\n"+Arrays.toString(getEnvObversationNames()));
+		IpssLogger.getLogger().info("Initial values of the observed states:\n"+Arrays.toString(observationAry));
 		
 		
 		// prepare the return array
@@ -557,12 +557,12 @@ public class IpssPyGateway {
 						
 						this.agentActionValuesAry[i] = 0.0; // force it to zero; invalid actions will not be applied
 						
-						System.out.println("Pre-fault(event) action: index, value = "+i+", "+actionValueAry[i]);
+						IpssLogger.getLogger().info("Pre-fault(event) action: index, value = "+i+", "+actionValueAry[i]);
 					}
 				}
 			}
 		// 
-		System.out.println ("Apply actions at time ="+this.dstabAlgo.getSimuTime());
+		IpssLogger.getLogger().info("Apply actions at time ="+this.dstabAlgo.getSimuTime());
 		applyAction(this.agentActionValuesAry, actionType, stepTimeInSec);
 		}
 		
@@ -1070,18 +1070,31 @@ public class IpssPyGateway {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		IpssLogger.getLogger().setLevel(Level.INFO);
+		
 		IpssPyGateway app = new IpssPyGateway();
 		// app is now the gateway.entry_point
 		int port = 25332;
+		int logLevel = 1;
 		
 		if (args.length>0) {
 			port = Integer.valueOf(args[0]);
+			
+			if(args.length>1) {
+				logLevel = Integer.valueOf(args[1]);
+				
+			}
 		}
+		if(logLevel>=1) {
+			IpssLogger.getLogger().setLevel(Level.FINE);
+		}
+		else {
+			IpssLogger.getLogger().setLevel(Level.OFF);
+		}
+		
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.82, built on 12/26/2019");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.83, built on 1/6/2020");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();
