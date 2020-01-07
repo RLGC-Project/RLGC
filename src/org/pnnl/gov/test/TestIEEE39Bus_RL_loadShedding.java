@@ -6,8 +6,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 
+import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.relay.LVSHLoadRelayModel;
 import org.interpss.numeric.datatype.Triplet;
 import org.junit.Test;
@@ -21,8 +25,13 @@ public class TestIEEE39Bus_RL_loadShedding {
 	
 	
 	@Test
-	public void test_noAction_BaseLine() {
+	public void test_noAction_BaseLine() throws SecurityException, IOException {
+		IpssCorePlugin.init();
 	    IpssPyGateway app = new IpssPyGateway();
+	    IpssLogger.getLogger().setLevel(Level.ALL);
+	    
+	    Handler fileHandler  = new FileHandler("./testLogger.log");
+	    IpssLogger.getLogger().addHandler(fileHandler);
 		
 		String[] caseFiles = new String[]{
 				"testData\\IEEE39\\IEEE39bus_multiloads_xfmr4_smallX_v30.raw",
@@ -54,6 +63,8 @@ public class TestIEEE39Bus_RL_loadShedding {
 		//FileUtil.writeText2File("C:\\Qiuhua\\DeepScienceLDRD\\output\\mach_angle_refbus1.csv",app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
 	
 		System.out.println("total rewards ="+app.getTotalRewards());
+		
+		
 	}
 	
 	//@Test
@@ -118,6 +129,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 //		FileUtil.writeText2File("C:\\Qiuhua\\DeepScienceLDRD\\output\\mach_angle_refbus1.csv",app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
 	
 		System.out.println("total rewards ="+app.getTotalRewards());
+		
 	}
 	
 	//@Test
@@ -188,7 +200,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 		System.out.println("total rewards ="+app.getTotalRewards());
 	}
 	
-	@Test
+	//@Test
 	public void test_IEEE39_RL_3motor_3actionLevels() {
 		IpssLogger.getLogger().setLevel(Level.ALL);
 	    IpssPyGateway app = new IpssPyGateway();

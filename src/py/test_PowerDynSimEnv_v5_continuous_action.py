@@ -6,7 +6,7 @@ import os, time
 
 java_port = 25335
 
-jar_file = "\lib\RLGCJavaServer0.82.jar"
+jar_file = "\lib\RLGCJavaServer0.83.jar"
 
 a = os.path.abspath(os.path.dirname(__file__))
 

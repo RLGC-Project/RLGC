@@ -63,7 +63,7 @@ public class LoadChangeActionProcessor extends AbstractActionProcessor implement
 					IpssLogger.getLogger().warning("The change fraction for bus =" +busId+" is large than remaining fraction, it has been changed to : "+changeFraction);
 				}
 				
-				System.out.println("Bus, remaining fraction, actual Load Shedding fraction = "+busId+", "+this.remainLoadFraction[i]+", "+changeFraction);
+				IpssLogger.getLogger().info("Bus, remaining fraction, actual Load Shedding fraction = "+busId+", "+this.remainLoadFraction[i]+", "+changeFraction);
 				
 				this.remainLoadFraction[i] = this.remainLoadFraction[i]+changeFraction;
 				

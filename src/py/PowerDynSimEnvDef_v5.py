@@ -141,11 +141,11 @@ class PowerDynSimEnv(gym.Env):
 
 
     def __init__(self,case_files, dyn_sim_config_file,rl_config_file , jar_file, server_port_num = 25333,
-                 force_symmetric_continuous_action=False):
+                 force_symmetric_continuous_action=False, verbose=0):
         
         # change from global to class-level variable to support parallel process
 
-        self.server_process = Popen(["java", "-jar", jar_file, str(server_port_num)], close_fds=True)
+        self.server_process = Popen(["java", "-jar", jar_file, str(server_port_num), str(verbose)], close_fds=True)
         print("IPSS-RL Java server lib path:", jar_file)
         print("Java server started with PID:", self.server_process.pid)
         time.sleep(5.0)
@@ -245,7 +245,7 @@ class PowerDynSimEnv(gym.Env):
                     self.action_space = spaces.Box(-ones, ones, dtype=action_ranges.dtype)
 
   
-        print (self.action_space)
+        #print (self.action_space)
 
         self.observation_space = spaces.Box(-999,999,shape=(observation_history_length * observation_space_dim,)) # Continuous
 
@@ -277,7 +277,7 @@ class PowerDynSimEnv(gym.Env):
         elif self.action_type == 'continuous':
             actionMapped = np.asarray(action)
             
-        print("action from policy =", actionMapped)
+        #print("action from policy =", actionMapped)
         actionPyAry = np.asarray(actionMapped,dtype = np.float64)
 
         if self.original_action_space is not None:
