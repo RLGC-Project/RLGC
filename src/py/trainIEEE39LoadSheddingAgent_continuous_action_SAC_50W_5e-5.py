@@ -1,6 +1,4 @@
-# This example is set up based on the example provided by Google Research
-# https://github.com/google-research/football/blob/master/gfootball/examples/run_ppo2.py
-#
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -18,7 +16,9 @@ import time
 
 
 import os
-
+from stable_baselines.bench import Monitor
+from stable_baselines.results_plotter import load_results, ts2xy
+from stable_baselines import results_plotter
 from stable_baselines.sac.policies import MlpPolicy
 from stable_baselines.sac.policies import FeedForwardPolicy
 from stable_baselines import SAC
@@ -49,22 +49,41 @@ dyn_config_file = repo_path + '/testData/IEEE39/json/IEEE39_dyn_config.json'
 rl_config_file = repo_path + '/testData/IEEE39/json/IEEE39_RL_loadShedding_3motor_continuous.json'
 
 
+# Create log dir
+log_dir = "./logFiles"
+os.makedirs(log_dir, exist_ok=True)
+
 storedData = "./storedData"
 
 savedModel= "./trainedModels"
 model_name = "IEEE39_multistep_obs11_randftd3_randbus3_3motor2action_prenull"
 
-def callback(lcl, glb):
+best_mean_reward, n_steps = -np.inf, 0
 
-    if lcl['t'] > 0:
-        step_rewards.append(lcl['episode_rewards'])
-     #  step_actions.append(lcl['action'])
-     #   step_observations.append(lcl['obs'])
-     #   step_status.append(lcl['done'])
-     #   step_starttime.append(lcl['starttime'])
-     #   step_durationtime.append(lcl['durationtime'])
-        if lcl['t'] % 499 == 0:
-            U.save_state(model_file)
+def callback(_locals, _globals):
+    """
+    Callback called at each step (for DQN an others) or after n steps (see ACER or PPO2)
+    :param _locals: (dict)
+    :param _globals: (dict)
+    """
+    global n_steps, best_mean_reward
+    # Print stats every 1000 calls
+    if (n_steps + 1) % 1000 == 0:
+        # Evaluate policy training performance
+        x, y = ts2xy(load_results(log_dir), 'timesteps')
+        if len(x) > 0:
+            mean_reward = np.mean(y[-100:])
+            print(x[-1], 'timesteps')
+            print("Best mean reward: {:.2f} - Last mean reward per episode: {:.2f}".format(best_mean_reward, mean_reward))
+
+            # New best model, you could save the agent here
+            if mean_reward > best_mean_reward:
+                best_mean_reward = mean_reward
+                # Example for saving best model
+                print("Saving new best model")
+                _locals['self'].save(log_dir + 'best_model.pkl')
+    n_steps += 1
+    return True
 
 # Custom MLP policy of two layers of size 256 each
 class CustomSACPolicy(FeedForwardPolicy):
@@ -76,14 +95,14 @@ class CustomSACPolicy(FeedForwardPolicy):
 
 
 
-def train(learning_rate, env, model_path):
+def train(learning_rate, time_steps, env, model_path):
     
     tf.reset_default_graph()    # to avoid the conflict the existnat parameters, but not suggested for reuse parameters
 
 
     # default policy is MlpPolicy
-    model = SAC(CustomSACPolicy, env, verbose=1,seed=10, n_cpu_tf_sess=16)
-    model.learn(total_timesteps=500000, log_interval=1000)
+    model = SAC(CustomSACPolicy, env, learning_rate=float(learning_rate), verbose=1,seed=10, n_cpu_tf_sess=16)
+    model.learn(total_timesteps=int(time_steps), log_interval=1000, callback=callback)
     model.save("sac_ieee39_loadshedding")
 
     #print("Saving final model to power_model_multistep_581_585_lr_%s.pkl" % (str(learning_rate)))
@@ -113,7 +132,12 @@ dataname = "multistep_obs11_randftd3_randbus3_3motor_continuous_prenull_100w"
 from PowerDynSimEnvDef_v5 import PowerDynSimEnv
 env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path,java_port)
 
+
+env = Monitor(env, log_dir, allow_early_resets=True)
+
+time_steps = 500000
 #for ll in [0.0001, 0.0005, 0.00005]:
+
 for ll in [0.00005]:
     step_rewards = list()
     step_actions = list()
@@ -127,7 +151,7 @@ for ll in [0.00005]:
     #model_path = "./previous_model/IEEE39_multistep_p150_3motor3action_prenull_008_lr_0.0001_30w.pkl"
     model_path = None
 
-    train(ll, env, model_path)
+    train(ll, time_steps, env, model_path)
 
     env.close_connection()
 
@@ -152,6 +176,10 @@ print("total running time is %s" % (str(end - start)))
 #np.save(os.path.join(storedData, "step_durationtime_t"), np.array(step_durationtime))
 
 print("Finished!!")
+
+results_plotter.plot_results([log_dir], time_steps, results_plotter.X_TIMESTEPS, "IEEE 39 Bus load shedding w/SAC")
+plt.savefig(log_dir+'/IEEE_39Bus_loadshedding_SAC {}_{}.png'.format(str(time_steps),str(ll)))
+plt.show()
 
 def test():
     act = ddpg.load("power_model.pkl")
