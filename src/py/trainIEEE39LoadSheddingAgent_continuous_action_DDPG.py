@@ -41,8 +41,8 @@ flags.DEFINE_float('gamma', 0.993, 'Discount factor')
 np.random.seed(19)
 
 # config the RLGC Java Sever
-java_port = 25033
-jar_file = '/lib/RLGCJavaServer0.82.jar'
+java_port = 25034
+jar_file = '/lib/RLGCJavaServer0.83.jar'
 
 
 a = os.path.abspath(os.path.dirname(__file__))
@@ -119,7 +119,7 @@ start = time.time()
 dataname = "multistep_obs11_randftd3_randbus3_3motor_continuous_prenull_100w"
 
 from PowerDynSimEnvDef_v5 import PowerDynSimEnv
-env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path,java_port)
+env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path,java_port,force_symmetric_continuous_action=True)
 
 #for ll in [0.0001, 0.0005, 0.00005]:
 for ll in [0.00005]:

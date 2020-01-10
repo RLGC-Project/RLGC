@@ -30,7 +30,7 @@
     
     "observationWeight":260.0,
     
-    "includeActionStatusInObservations": false,
+    "includeActionStatusInObservations": true,
 
     "minVoltRecoveryLevel":0.95, 
             

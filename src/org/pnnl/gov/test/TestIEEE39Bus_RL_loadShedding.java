@@ -24,7 +24,7 @@ import com.interpss.dstab.DStabilityNetwork;
 public class TestIEEE39Bus_RL_loadShedding {
 	
 	
-	@Test
+	//@Test
 	public void test_noAction_BaseLine() throws SecurityException, IOException {
 		IpssCorePlugin.init();
 	    IpssPyGateway app = new IpssPyGateway();
@@ -67,8 +67,72 @@ public class TestIEEE39Bus_RL_loadShedding {
 		
 	}
 	
+	@Test
+	public void test_IEEE39_RL_baseline_discrete() {
+		IpssLogger.getLogger().setLevel(Level.ALL);
+	    IpssPyGateway app = new IpssPyGateway();
+		
+		String[] caseFiles = new String[]{
+				"testData\\IEEE39\\IEEE39bus_multiloads_xfmr4_smallX_v30.raw",
+				"testData\\IEEE39\\IEEE39bus_3AC.dyr"//IEEE39bus.dyr"
+				};
+		
+		String dynSimConfigFile = "testData\\IEEE39\\json\\IEEE39_dyn_config.json"; // define dynamic simulation and monitoring
+		String rlConfigJsonFile = "testData\\IEEE39\\json\\IEEE39_RL_loadShedding_3motor_3levels.json";
+		
+		int[] ob_act_space_dim = null;
+		
+		try {
+			ob_act_space_dim = app.initStudyCase(caseFiles, dynSimConfigFile, rlConfigJsonFile);
+			
+			System.out.println("ob_act_space_dim array = "+Arrays.toString( ob_act_space_dim));
+			
+			assertTrue(ob_act_space_dim[0]==10);
+			assertTrue(ob_act_space_dim[1]==11);
+			assertTrue(ob_act_space_dim[2]==3);
+			assertTrue(ob_act_space_dim[3]==3);
+			
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+		
+		app.reset(0, 0, app.getFaultStartTimeCandidates()[0], 0.08);
+		
+	
+		
+		while(app.getDStabAlgo().getSimuTime()<app.getDStabAlgo().getTotalSimuTimeSec()) {
+			
+			if(app.getDStabAlgo().getSimuTime()>0.25 && app.getDStabAlgo().getSimuTime()<0.75){
+			    app.nextStepDynSim(0.1, new double[]{2, 2, 2}, "discrete"); // apply load shedding action to bus 504
+			} 
+			else
+				app.nextStepDynSim(0.1, new double[]{0.0, 0, 0}, "discrete");
+			
+			
+			app.getReward();
+			
+			if(app.isSimulationDone())
+				break;
+			
+			if(app.getDStabAlgo().getSimuTime()>10.0)
+			    break;
+			
+		}
+		
+		
+		
+		//System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachSpeedTable()));
+//		System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
+		System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getBusVoltTable()));
+//		FileUtil.writeText2File("C:\\Qiuhua\\DeepScienceLDRD\\output\\mach_angle_refbus1.csv",app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
+	
+		System.out.println("total rewards ="+app.getTotalRewards());
+		
+	}
+	
 	//@Test
-	public void test_IEEE39_RL_baseline() {
+	public void test_IEEE39_RL_baseline_continuous() {
 		IpssLogger.getLogger().setLevel(Level.ALL);
 	    IpssPyGateway app = new IpssPyGateway();
 		
@@ -97,6 +161,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 			e.printStackTrace();
 		}
 		
+		app.reset(0, 0, 0.05, 0.08);
 		double[][] obs_ary = app.getEnvObversations();
 		assertTrue(obs_ary.length == 4);
 		assertTrue(obs_ary[0].length == 16);

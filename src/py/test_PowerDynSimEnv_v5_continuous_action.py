@@ -6,7 +6,7 @@ import os, time
 
 java_port = 25335
 
-jar_file = "\lib\RLGCJavaServer0.83.jar"
+jar_file = "\lib\RLGCJavaServer0.85.jar"
 
 a = os.path.abspath(os.path.dirname(__file__))
 
@@ -42,10 +42,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from PowerDynSimEnvDef_v5 import PowerDynSimEnv
 env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path,java_port)
 
-
+env.reset()
 for i in range(15):
     results = env.step([-.5,-0.3,-0.1]) # no action is applied
-    #print('states =',results[0])
+    print('states =',results[0])
     print('step reward =', results[1])
     
 
