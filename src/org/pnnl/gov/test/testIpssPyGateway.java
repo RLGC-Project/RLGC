@@ -13,7 +13,7 @@ import org.pnnl.gov.pss_gateway.IpssPyGateway;
 
 public class testIpssPyGateway {
 	
-	//@Test
+	@Test
 	public void test_basic_functions() {
 		IpssPyGateway app = new IpssPyGateway();
 		

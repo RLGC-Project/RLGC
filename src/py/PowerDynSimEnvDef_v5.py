@@ -137,7 +137,7 @@ class PowerDynSimEnv(gym.Env):
 
     # to save the original action low and high values to help rescale them back before applying to the environment
     original_action_space = None
-
+    is_action_space_scaled =False
 
 
     def __init__(self,case_files, dyn_sim_config_file,rl_config_file , jar_file, server_port_num = 25333,
@@ -237,15 +237,16 @@ class PowerDynSimEnv(gym.Env):
 
             self.action_space = spaces.Box(low, high, dtype=action_ranges.dtype)
 
+
             if force_symmetric_continuous_action:  # i.e., force np.abs(low) == high
                 if not (np.abs(low) == high).all():
                     print('!!Warming: the original action space is non-symmetric, convert it to [-1,1] for each action')
                     self.original_action_space = spaces.Box(low, high, dtype=action_ranges.dtype)
                     ones = np.ones_like(low)
                     self.action_space = spaces.Box(-ones, ones, dtype=action_ranges.dtype)
+                    self.is_action_space_scaled = True
 
-  
-        #print (self.action_space)
+                    #print (self.action_space)
 
         self.observation_space = spaces.Box(-999,999,shape=(observation_history_length * observation_space_dim,)) # Continuous
 
@@ -280,9 +281,9 @@ class PowerDynSimEnv(gym.Env):
         #print("action from policy =", actionMapped)
         actionPyAry = np.asarray(actionMapped,dtype = np.float64)
 
-        if self.original_action_space is not None:
+        if self.is_action_space_scaled and self.original_action_space is not None:
             #Rescale the action from [-1, 1] to [low, high]
-            actionPyAry = unscale_action(self.original_action_space,actionPyAry)
+            actionPyAry = unscale_action(self.original_action_space, actionPyAry)
 
         # print(actionPyAry, 'len = ', actionPyAry.size)
 
@@ -354,12 +355,12 @@ class PowerDynSimEnv(gym.Env):
        
         ftd_candidates = transfer1DJavaArray2NumpyArray(self.ipss_app.getFaultDurationCandidates())
         
-        fault_duation_time = ftd_candidates[np.random.randint(0, len(ftd_candidates))] # a double number, in the range of [0.08, 0.4]
+        fault_duration_time = ftd_candidates[np.random.randint(0, len(ftd_candidates))] # a double number, in the range of [0.08, 0.4]
   
   
         # reset initial state to states of time = 0, non-fault
 
-        self.ipss_app.reset(case_Idx,fault_bus_idx,fault_start_time,fault_duation_time)
+        self.ipss_app.reset(case_Idx, fault_bus_idx, fault_start_time, fault_duration_time)
 
         #self.state = None
 
@@ -380,12 +381,10 @@ class PowerDynSimEnv(gym.Env):
     # init the system with a specific state and fault
     def validate(self, case_Idx, fault_bus_idx, fault_start_time, fault_duation_time):
 
-        total_bus_num = self.ipss_app.getTotalBusNum()
-
         self.ipss_app.reset(case_Idx,fault_bus_idx,fault_start_time,fault_duation_time)
 
         # observations is a Java_Collections array
-        observations = self.ipss_app.getEnvObversations();
+        observations = self.ipss_app.getEnvObversations()
 
         # convert it from Java_collections array to native Python array
         self.state = transfer2DJavaArray2NumpyArray(observations)

@@ -545,11 +545,9 @@ public class IpssPyGateway {
 		// NOTE: internally it may run multiple steps for one environment action step.
 		int internalSteps = (int) Math.round(stepTimeInSec/dstabAlgo.getSimuStepSec());
 		
-		
-		
-		this.agentActionValuesAry = Arrays.copyOf(actionValueAry, actionValueAry.length);
-		
-		if(this.agentActionValuesAry!=null) {
+		if(actionValueAry!=null) {
+			this.agentActionValuesAry = Arrays.copyOf(actionValueAry, actionValueAry.length);
+			
 			if(this.dstabAlgo.getSimuTime() < this.faultStartTime){
 				for(int i = 0; i <this.agentActionValuesAry.length;i++){
 					if( Math.abs(this.agentActionValuesAry[i]) > 0.0){ // non-zero values will be detected
@@ -561,9 +559,9 @@ public class IpssPyGateway {
 					}
 				}
 			}
-		// 
-		IpssLogger.getLogger().info("Apply actions at time ="+this.dstabAlgo.getSimuTime());
-		applyAction(this.agentActionValuesAry, actionType, stepTimeInSec);
+		   // 
+		    IpssLogger.getLogger().info("Apply actions at time ="+this.dstabAlgo.getSimuTime());
+		    applyAction(this.agentActionValuesAry, actionType, stepTimeInSec);
 		}
 		
 		if (this.isPreFaultActionApplied)
@@ -636,8 +634,18 @@ public class IpssPyGateway {
 			e.printStackTrace();
 		} 
     	
-    	if(faultBusIdx>= 0 && faultBusIdx<this.dsNet.getNoBus())
-    	    this.faultBusId = this.dsNet.getBusList().get(faultBusIdx).getId();
+    	if(faultBusIdx>= 0 && faultBusIdx<this.rlConfigBean.faultBusCandidates.length) {
+    	    this.faultBusId = this.rlConfigBean.faultBusCandidates[faultBusIdx];
+    	    if (this.dsNet.getBus(this.faultBusId)==null) {
+    	    	this.faultBusId= null;
+    	    	IpssLogger.getLogger().severe("Error in the faultBusId in faultBusCandidates list in RL json configure file, index="+faultBusIdx);
+        		
+    	    }
+    	}
+    	else {
+    		IpssLogger.getLogger().severe("The faultBusIdx is outside the faultBusCandidates list defined in RL json configure file!");
+    		this.faultBusId= null;
+    	}
     	
     	if (this.faultBusId!= null && faultStartTime> 0 && faultDuration > 0){
     	    dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(this.faultBusId,this.dsNet,SimpleFaultCode.GROUND_3P, new Complex(0.0), null,faultStartTime,faultDuration),"3phaseFault@"+faultBusId);
@@ -646,6 +654,8 @@ public class IpssPyGateway {
     		this.faultStartTime = 0.0;
         	this.faultDuration = 0.0;
     	}
+    	
+    	System.out.println(String.format("Case id: %d, Fault bus id: %s, fault start time: %f, fault duration: %f", caseIdx, faultBusId,faultStartTime,faultDuration));
     	
     	return initDimAry;
     	
@@ -1094,7 +1104,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.83, built on 1/6/2020");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.85, built on 1/10/2020");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

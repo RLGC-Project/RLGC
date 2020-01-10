@@ -1,4 +1,13 @@
 =====================
+V0.84 fixed a bug in mapping faultBusIdx to actual system fault bus; now in IPSS-RL, the fault busIdx is based on the faultCandidate list in the RL configuration file, not the whole system bus list.
+ consistent with PowerDynSimEnvDef (v5) 
+
+=====================
+V0.83 
+1. provided an option for unsymmetrical action space transformation in PowerDynSimEnvDef (v5)  
+2. provided verbose control configuration for PowerDynSimEnvDef (v5)      
+
+=====================
 V0.82
 1) PowerDynSimEnvDef (v5) simplifies the environment creation by moving the IpssGateWay setup into env.init() function
 2) Create the PowerDynSimEnvDef (v5) test case
