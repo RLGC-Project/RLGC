@@ -17,7 +17,14 @@ We explore to use deep reinforcement learning methods for control and decision-m
      ```
 
    - To create the virtual environment   
-
+     In case you like to use our development environment, we have provided environment. yml file
+     
+     ```
+     cd RLGC
+     conda env create -f environment. yml
+     ``` 
+     
+     or you can create your own environment
      ```
      cd RLGC    
      conda env create --name <your-env-name>  
@@ -47,26 +54,24 @@ We explore to use deep reinforcement learning methods for control and decision-m
 
 
 ### Training
-First launch java server which is used to simulate the power grid system. Then launch your training in the virtual environment. We provide two power grid systems in the examples. ```RLGCJavaServer0.72.jar``` is the latest release and can be used for the IEEE 39-bus system and ```RLGCJavaServerSimple.jar```is only used for the Kundur 2-area system.   
 
-- To launch the java server, open a new terminal    
-
-```
-cd ~
-cd RLGC/lib  
-java -jar RLGCJavaServer0.72.jar 25001
-```
-The last parameter is the communication port number between grid system and the training agent. You can switch the port number if necessary.  
-
-
-- To launch the training, you need first activate the virtual environment. Then run the following scripts. ```trainKundur2areaGenBrakingAgent.py``` is used for training the generator braking agent for the Kundur 2-area system and ```trainIEEE39LoadSheddingAgent.py``` is used for training an agent for regional load shedding in IEEE 39-bus system
+- With the RLGCJavaSever version 0.80 or newer and 
+grid environment definition version 5 (PowerDynSimEnvDef_v5.py)
+ or newer, users don't need to start the java server explicitly. 
+ The server will be started automatically when the grid environment
+ ``PowerDynSimEnv`` is created.
+- To launch the training, you need first activate the virtual 
+environment. Then run the following scripts. 
+```trainKundur2areaGenBrakingAgent.py``` is used for training 
+the generator braking agent for the Kundur 2-area system and ```trainIEEE39LoadSheddingAgent_*.py``` is used for training an agent for regional load shedding in IEEE 39-bus system
 
 
 ```
 source activate <your-env-name> 
 cd RLGC/src/py  
-python trainIEEE39LoadSheddingAgent.py 
+python trainIEEE39LoadSheddingAgent_discrete_action.py 
 ```
+
 During the training the screen will dump out the training log. After training, you can deactivate the virtual environment by  
 
 ```
@@ -78,6 +83,34 @@ source deactivate
 ###  Check training results and test trained model
 
 Two Jupyter notebooks (with Linux and Windows versions-- directory paths are specified differently) are provided as examples for checking training results and testing trained RL model.
+
+
+
+### Customize the grid environment for training and testing
+If you want to develop a new grid environment for RL training or customize the existing grid environment (e.g. IEEE 39-bus system for load shedding), the simplest way is through providing 
+your own cases and configuration files. 
+
+When you open ``trainIEEE39LoadSheddingAgent_discrete_action.py `` you will notice the following
+codes:
+
+```
+case_files_array =[]
+case_files_array.append(repo_path + '/testData/IEEE39/IEEE39bus_multiloads_xfmr4_smallX_v30.raw')
+case_files_array.append(repo_path + '/testData/IEEE39/IEEE39bus_3AC.dyr')
+
+....
+# configuration files for dynamic simulation and RL
+dyn_config_file = repo_path + '/testData/IEEE39/json/IEEE39_dyn_config.json'
+rl_config_file = repo_path + '/testData/IEEE39/json/IEEE39_RL_loadShedding_3motor_2levels.json'
+
+env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file, jar_path, java_port)
+```
+
+They are to specify the cases and configuration files for dynamic simulation and RL training.
+You can develop your environment by following these examples. Since ``PowerDynSimEnv`` is defined based on 
+OpenAI Gym environment definition, once the environment is created, you can use it like other Gym environments,
+and seamlessly interface it with RL algorithms provided in OpenAI baselines or Stable baselines 
+
 
 --------------------------------------
 
