@@ -119,6 +119,11 @@ public class IpssPyGateway {
 	
 	boolean applyFaultDuringInitialization = true;
 	
+	public IpssPyGateway() {
+		IpssCorePlugin.init();
+	    IpssLogger.getLogger().setLevel(Level.OFF);
+	}
+	
 	
 	/**
 	 * Return the dimensions of the observation space and the action space {history_Observation_length,observation_space_size, action_space_dim};
@@ -214,14 +219,14 @@ public class IpssPyGateway {
 			}
 			// set the monitoring variables
 			
-			sm = new StateMonitor();
+			this.sm = new StateMonitor();
 			
-			sm.addBusStdMonitor(dstabBean.monitoringBusAry);
-			sm.addGeneratorStdMonitor(dstabBean.monitoringGenAry);
+			this.sm.addBusStdMonitor(dstabBean.monitoringBusAry);
+			this.sm.addGeneratorStdMonitor(dstabBean.monitoringGenAry);
 			
 			
 			// set the output handler
-			dstabAlgo.setSimuOutputHandler(sm);
+			dstabAlgo.setSimuOutputHandler(this.sm);
 			
 			dstabAlgo.setOutPutPerSteps(dstabBean.outputPerNSteps);
 			
@@ -259,7 +264,7 @@ public class IpssPyGateway {
 		//read the rlConfigFile to determine the dimension of the observation and action spaces
 		int[] observation_space_dim = initObsverationSpace();
 		
-		IpssLogger.getLogger().info("Observed states:\n"+Arrays.toString(getEnvObversationNames()));
+		IpssLogger.getLogger().info("Observed states:\n"+Arrays.toString(getEnvObservationNames()));
 		IpssLogger.getLogger().info("Initial values of the observed states:\n"+Arrays.toString(observationAry));
 		
 		
@@ -271,7 +276,7 @@ public class IpssPyGateway {
 	}
 	
 	//TODO hashtable to store the past N step internal "states" for output as an environment state
-    public double[][] getEnvObversations() {
+    public double[][] getEnvObservations() {
     	
     	 
     	int historyObservSize = this.rlConfigBean.historyObservationSize;
@@ -309,10 +314,14 @@ public class IpssPyGateway {
     }
     
     
-    public String[] getEnvObversationNames() {
+    public String[] getEnvObservationNames() {
     	
     	return obsrv_state_names.toArray(new String[0]);
     	
+    }
+    
+    public String[] getActionBusIds() {
+    	return this.actionBusIds;
     }
     
     
@@ -347,7 +356,7 @@ public class IpssPyGateway {
 				this.stepReward = -Math.abs(delta_equiv_spd) - rlConfigBean.actionPenalty*u;
 			}
 		}
-		else if(this.rlConfigBean.environmentName.contains("IEEE39_FIDVR_LoadShedding")){
+		else if(this.rlConfigBean.environmentName.contains("FIDVR_LoadShedding")){
 			double sumOfVoltageDeviation = 0.0;
 			double sumOfLoadShedPU =0.0;
 			double maxRecoveryTime = this.rlConfigBean.maxVoltRecoveryTime;
@@ -355,6 +364,8 @@ public class IpssPyGateway {
 			int sumOfInvalidActions = 0;
 			
 			boolean isMiniRecoveryMet = true;
+			
+			List<String> miniVoltRecoveryViolationBusList = new ArrayList<>();
 			
 			
 			if(this.dstabAlgo.getSimuTime()> (this.faultStartTime+this.faultDuration)){
@@ -388,7 +399,11 @@ public class IpssPyGateway {
 					
 					if(this.dstabAlgo.getSimuTime() > (this.faultStartTime+this.faultDuration +maxRecoveryTime)){
 					        //if any violation occurs, set the <isMiniRecoveryMet> to false
-							if(voltMag < this.rlConfigBean.minVoltRecoveryLevel) isMiniRecoveryMet = false;
+							if(voltMag < this.rlConfigBean.minVoltRecoveryLevel) {
+								isMiniRecoveryMet = false;
+								miniVoltRecoveryViolationBusList.add(busId);
+							}
+							
 						
 					}
 					
@@ -451,6 +466,7 @@ public class IpssPyGateway {
 			}
 			else{
 					IpssLogger.getLogger().severe("Minimum voltage recovery was not met at time = "+this.dstabAlgo.getSimuTime()+", simulation is stopped by early termination.");
+					IpssLogger.getLogger().severe("Violation bus list: "+Arrays.toString(miniVoltRecoveryViolationBusList.toArray()));
 					this.stepReward = this.rlConfigBean.unstableReward;
 					this.isSimulationDone =true;
 			}
@@ -662,7 +678,7 @@ public class IpssPyGateway {
 	}
 	
 	private boolean loadStudyCase(String[] caseFiles) {
-		IpssCorePlugin.init();
+		//IpssCorePlugin.init();
 		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
 		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 		
@@ -714,7 +730,7 @@ public class IpssPyGateway {
 			
 		}
 		
-		double[][] all_observ_states = getEnvObversations();
+		double[][] all_observ_states = getEnvObservations();
 		
 		
 		obsrv_size = all_observ_states[0].length;
@@ -769,7 +785,7 @@ public class IpssPyGateway {
 					for(String actionType: actionTypes) {
 						if(actionType.equalsIgnoreCase("LoadShed")) {
 							//check if it is a load
-							if(bus.isLoad()) {
+							if(bus.isLoad()||!bus.getContributeLoadList().isEmpty()) {
 								action_location_num++;
 								actionBusIdList.add(bus.getId());
 							}
@@ -899,7 +915,8 @@ public class IpssPyGateway {
 				
 		for(DStabBus bus:dsNet.getBusList()) {
 			if(bus.isActive()) {
-				if(isBusWithinScope(bus,scopeType,scopeAry)) {
+				if(bus.getBaseVoltage()>=rlConfigBean.observationVoltThreshold)
+				  if(isBusWithinScope(bus,scopeType,scopeAry)) {
 					
 					for(String stateType : obsrvStateTypes) {
 						if(stateType.equalsIgnoreCase("frequency")) {
@@ -1072,6 +1089,17 @@ public class IpssPyGateway {
 		return this.rlConfigBean.actionValueRanges;
 	}
 
+	public void setLoggerLevel(int level) {
+		if(level>=2) {
+			IpssLogger.getLogger().setLevel(Level.FINE);
+		}
+		else if(level==1) {
+			IpssLogger.getLogger().setLevel(Level.WARNING);
+		}
+		else {
+			IpssLogger.getLogger().setLevel(Level.OFF);
+		}
+	}
 	
 	
 	/**
@@ -1084,7 +1112,7 @@ public class IpssPyGateway {
 		IpssPyGateway app = new IpssPyGateway();
 		// app is now the gateway.entry_point
 		int port = 25332;
-		int logLevel = 1;
+		int logLevel = 0;
 		
 		if (args.length>0) {
 			port = Integer.valueOf(args[0]);
@@ -1094,8 +1122,11 @@ public class IpssPyGateway {
 				
 			}
 		}
-		if(logLevel>=1) {
+		if(logLevel>=2) {
 			IpssLogger.getLogger().setLevel(Level.FINE);
+		}
+		else if(logLevel==1) {
+			IpssLogger.getLogger().setLevel(Level.WARNING);
 		}
 		else {
 			IpssLogger.getLogger().setLevel(Level.OFF);
@@ -1104,7 +1135,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.85, built on 1/10/2020");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.86, built on 2/11/2020");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

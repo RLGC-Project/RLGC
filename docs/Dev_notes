@@ -1,4 +1,11 @@
 =====================
+V0.86 fixed a bug with verbose setting. The verbose settings could be updated through the new setLoggerLevel() function.
+
+=====================
+V0.85 fixed a bug in mapping faultBusIdx to actual system fault bus; now in IPSS-RL, the fault busIdx is based on the faultCandidate list in the RL configuration file, not the whole system bus list.
+ consistent with PowerDynSimEnvDef (v5) 
+
+=====================
 V0.84 fixed a bug in mapping faultBusIdx to actual system fault bus; now in IPSS-RL, the fault busIdx is based on the faultCandidate list in the RL configuration file, not the whole system bus list.
  consistent with PowerDynSimEnvDef (v5) 
 

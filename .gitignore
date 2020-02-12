@@ -26,3 +26,9 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+# intermediate result files
+/src/py/PowerGridModels/*
+/src/py/previous_model/*
+/src/py/storedData/*
+/src/py/trainedModels/*

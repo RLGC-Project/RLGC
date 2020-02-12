@@ -4,7 +4,7 @@ from py4j.java_gateway import (JavaGateway, GatewayParameters)
 import os
 
 
-java_port = 25333
+java_port = 25332
 
 a = os.path.abspath(os.path.dirname(__file__))
 

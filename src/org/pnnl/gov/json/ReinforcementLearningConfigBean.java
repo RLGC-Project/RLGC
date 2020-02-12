@@ -16,7 +16,7 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
 	public int version = 1; //include version info to make the configuration backward compatible 
     public String actionSpaceType = "discrete"; // discrete or continuous 
     public double[][]  actionValueRanges = {{}}; // { {min1,max1}, {min2, max2},..,{min_N, max_N}} for N continuous actions
-    
+	public double observationVoltThreshold = 1.0;
 	
 	
 	//---------Below are for version 1------------------
@@ -28,7 +28,7 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
 	// define observation stateTypes, such as voltage, frequency, genSpeed, loadP, loadQ
 	public String[] observationStateTypes = {} ; //{"voltage","frequency","loadP","loadQ","genSpeed","genAng"}; 
 	
-	public String observationScopeType ="";
+	public String observationScopeType ="";  //{Bus, Zone, Area,System}
 			
 	public String[] observationScopeAry= {};
 	

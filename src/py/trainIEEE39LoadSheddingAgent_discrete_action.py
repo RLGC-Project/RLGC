@@ -24,7 +24,7 @@ np.random.seed(19)
 
 # config the RLGC Java Sever
 java_port = 25002
-jar_file = '/lib/RLGCJavaServer0.82.jar'
+jar_file = '/lib/RLGCJavaServer0.86.jar'
 
 a = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))

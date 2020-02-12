@@ -41,8 +41,7 @@ public class TestRLvsBaseLine {
 		
 		//System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachSpeedTable()));
 		System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
-		FileUtil.writeText2File("C:\\Qiuhua\\DeepScienceLDRD\\output\\mach_angle_refbus1.csv",app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
-	
+		
 	}
 	
 	//@Test
@@ -70,7 +69,7 @@ public class TestRLvsBaseLine {
 			e.printStackTrace();
 		}
 		
-		double[][] obs_ary = app.getEnvObversations();
+		double[][] obs_ary = app.getEnvObservations();
 		assertTrue(obs_ary.length == 1);
 		assertTrue(obs_ary[0].length == 8);
 		System.out.println(Arrays.toString(obs_ary[0]));
@@ -125,7 +124,7 @@ public class TestRLvsBaseLine {
 			e.printStackTrace();
 		}
 		
-		double[][] obs_ary = app.getEnvObversations();
+		double[][] obs_ary = app.getEnvObservations();
 		assertTrue(obs_ary.length == 1);
 		assertTrue(obs_ary[0].length == 8);
 		System.out.println(Arrays.toString(obs_ary[0]));
