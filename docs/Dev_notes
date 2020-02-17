@@ -1,4 +1,9 @@
 =====================
+V0.87 fixed a bug with memory overheap issue with caching the observations with large number of RL training steps.
+
+Set this.sm = null within the reset() function of IpssPyGateway class.
+
+=====================
 V0.86 fixed a bug with verbose setting. The verbose settings could be updated through the new setLoggerLevel() function.
 
 =====================

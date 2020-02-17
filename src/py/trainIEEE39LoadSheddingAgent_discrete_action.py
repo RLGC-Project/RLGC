@@ -24,7 +24,7 @@ np.random.seed(19)
 
 # config the RLGC Java Sever
 java_port = 25002
-jar_file = '/lib/RLGCJavaServer0.86.jar'
+jar_file = '/lib/RLGCJavaServer0.87.jar'
 
 a = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -71,7 +71,7 @@ def train(learning_rate, env, model_path):
         env,
         network = 'mlp',
         lr=learning_rate,
-        total_timesteps=20,
+        total_timesteps=500000,
         buffer_size=50000,
         checkpoint_freq = 1000,
         learning_starts = 1000,

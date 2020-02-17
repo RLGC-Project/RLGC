@@ -634,6 +634,7 @@ public class IpssPyGateway {
     	
     	this.isActionApplied = false;
     	this.agentActionValuesAry = null;
+    	this.sm= null;
     	
     	
     	//TODO which parameter to apply the randomization? 
@@ -896,6 +897,7 @@ public class IpssPyGateway {
 		// the bus, not the state type first.
 		// Then different types of states are concatted to one large vector/array 
 		
+		
 		obsrv_freq = new LinkedHashMap<>();
 		obsrv_voltMag = new LinkedHashMap<>();
 		obsrv_voltAng = new LinkedHashMap<>();
@@ -1135,7 +1137,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.86, built on 2/11/2020");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.87, built on 2/16/2020");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

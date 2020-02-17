@@ -25,11 +25,11 @@ from stable_baselines import SAC
 import baselines.common.tf_util as U
 
 
-np.random.seed(19)
+np.random.seed(219)
 
 # config the RLGC Java Sever
 java_port = 25034
-jar_file = '/lib/RLGCJavaServer0.85.jar'
+jar_file = '/lib/RLGCJavaServer0.87.jar'
 
 
 a = os.path.abspath(os.path.dirname(__file__))
@@ -101,7 +101,7 @@ def train(learning_rate, time_steps, env, model_path):
 
 
     # default policy is MlpPolicy
-    model = SAC(CustomSACPolicy, env, learning_rate=float(learning_rate), verbose=1,seed=10, n_cpu_tf_sess=16)
+    model = SAC(CustomSACPolicy, env, learning_rate=float(learning_rate), verbose=1, seed=10, n_cpu_tf_sess=16)
     model.learn(total_timesteps=int(time_steps), log_interval=1000, callback=callback)
     model.save("sac_ieee39_loadshedding")
 

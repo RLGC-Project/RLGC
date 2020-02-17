@@ -25,7 +25,7 @@ np.random.seed(19)
 
 # config the RLGC Java Sever
 java_port = 25003
-jar_file = '/lib/RLGCJavaServer0.82.jar'
+jar_file = '/lib/RLGCJavaServer0.87.jar'
 
 # This is to fix the issue of "ModuleNotFoundError" below
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))  
