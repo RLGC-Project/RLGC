@@ -28,6 +28,7 @@
 hs_err_pid*
 
 # intermediate result files
+/bin
 /src/py/PowerGridModels/*
 /src/py/previous_model/*
 /src/py/storedData/*
