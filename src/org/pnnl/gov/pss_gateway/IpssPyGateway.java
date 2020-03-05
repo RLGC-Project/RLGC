@@ -1,6 +1,10 @@
 package org.pnnl.gov.pss_gateway;
 
 
+import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -119,11 +123,28 @@ public class IpssPyGateway {
 	
 	boolean applyFaultDuringInitialization = true;
 	
+	boolean isFirstInit = true;
+	
+	String absolutePath2DataFolder = null;
+	List<String> baseCaseFiles = null;
+	
 	public IpssPyGateway() {
 		IpssCorePlugin.init();
 	    IpssLogger.getLogger().setLevel(Level.OFF);
+	    
+		System.out.println("Working Directory = " +
+	              System.getProperty("user.dir"));
+		
+		absolutePath2DataFolder = System.getProperty("user.dir");
 	}
 	
+	
+	public int[] initStudyCase(String[] caseFiles,  String dynSimConfigFile, String rlConfigFile) throws IOException {
+		
+		// use the current directory folder as the absolute Path to the Data Folder "testData\"
+		return initStudyCase(caseFiles,  dynSimConfigFile, rlConfigFile,absolutePath2DataFolder);
+		
+	}
 	
 	/**
 	 * Return the dimensions of the observation space and the action space {history_Observation_length,observation_space_size, action_space_dim};
@@ -132,7 +153,7 @@ public class IpssPyGateway {
 	 * @return int [] 
 	 * @throws IOException 
 	 */
-	public int[] initStudyCase(String[] caseFiles,  String dynSimConfigFile, String rlConfigFile) throws IOException {
+	public int[] initStudyCase(String[] caseFiles,  String dynSimConfigFile, String rlConfigFile, String path2DataFolder) throws IOException {
 		
 		caseInputFiles = new String[3];
 		dynSimConfigJsonFile=dynSimConfigFile;
@@ -140,8 +161,9 @@ public class IpssPyGateway {
 		
 		dstabBean  = BaseJSONBean.toBean(dynSimConfigFile, DstabRunConfigBean.class);
 		
-		if(caseFiles!=null)
+		if(caseFiles!=null) {
 			caseInputFiles =caseFiles;
+		}
 		else if (dstabBean!=null) {
 			boolean hasSeqFile = false;
 			caseInputFiles[0] = dstabBean.acscConfigBean.runAclfConfig.aclfCaseFileName;
@@ -165,6 +187,44 @@ public class IpssPyGateway {
 		}
 		
 		rlConfigBean = BaseJSONBean.toBean( rlConfigFile,ReinforcementLearningConfigBean.class);
+		
+		
+		absolutePath2DataFolder = path2DataFolder;
+		if(isFirstInit) {
+			//get the base case files
+			
+			baseCaseFiles = new ArrayList<>();
+			
+			//first, add the initial base case to the list
+			baseCaseFiles.add(caseInputFiles[0]); 
+			
+			//then, add other base cases under the study Case Folder defined in rlConfigBean to the list
+			
+			String folderPath = rlConfigBean.studyCaseFolder;
+			
+			if(folderPath!=null && !folderPath.isEmpty()) {
+			    
+				File dir = new File(absolutePath2DataFolder + File.separator + folderPath); 
+				File[] listFiles = dir.listFiles((d, s) -> {
+					return s.toLowerCase().endsWith(".raw");
+				});
+				
+				if(listFiles!= null && listFiles.length>0) {
+					for (File f: listFiles) {
+						
+						String newCaseString = dir + File.separator + f.getName();
+						//System.out.println("File: " + newCaseString);
+						if(!baseCaseFiles.contains(newCaseString))
+								baseCaseFiles.add(newCaseString);
+					} 
+				}
+			}
+			
+			isFirstInit = false;
+		}
+		
+		System.out.println("\nPower flow base case files:");
+		System.out.println(Arrays.toString(baseCaseFiles.toArray())+"\n");
 		
 		// initialize the variables for storing the history observation records
 		observationHistoryRecord = new Hashtable<>();
@@ -637,10 +697,16 @@ public class IpssPyGateway {
     	this.sm= null;
     	
     	
-    	//TODO which parameter to apply the randomization? 
-    	// fault type, fault location, scenario (case index)
+        //update caseInputFiles using the base case associated with the input case index 
+    	//TODO, in the future, the input dynamic file could also be updated if associated dynamic files are provided.
     	
-    	// case index is not used for now
+    	if(caseIdx>=0 && baseCaseFiles.size()>caseIdx) {
+    		caseInputFiles[0] = baseCaseFiles.get(caseIdx);
+    	}
+    	else {
+    		IpssLogger.getLogger().severe("Error in the caseIdx in reset() function inpute, caseIdx < number of cases. caseIdx ="+caseIdx+", # of total cases ="+baseCaseFiles.size()+". Will use the first base case.");
+    		caseInputFiles[0] = baseCaseFiles.get(0);
+    	}
     	
 
     	
@@ -1063,9 +1129,13 @@ public class IpssPyGateway {
 	}
 	
 	
-	public String[] getStudyCases(){
-		return this.rlConfigBean.studyCases;
+	public String[] getBaseCases(){
+		return this.baseCaseFiles.toArray(new String[] {});
 		
+	}
+	
+	public int getTotalBaseCaseNumber() {
+		return this.baseCaseFiles.size();
 	}
 	
 	public String[] getFaultBusCandidates(){
@@ -1112,6 +1182,7 @@ public class IpssPyGateway {
 	public static void main(String[] args) {
 		
 		IpssPyGateway app = new IpssPyGateway();
+		
 		// app is now the gateway.entry_point
 		int port = 25332;
 		int logLevel = 0;
@@ -1137,7 +1208,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.87, built on 2/16/2020");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.89, built on 3/4/2020");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

@@ -1,4 +1,13 @@
 =====================
+V0.89 add the capability of selecting different base cases.
+
+
+
+=====================
+V0.88 fixed a bug of parsing "0.000" as integer, first detected in IEEE300 bus system dynamic dyr file.
+
+
+=====================
 V0.87 fixed a bug with memory overheap issue with caching the observations with large number of RL training steps.
 
 Set this.sm = null within the reset() function of IpssPyGateway class.

@@ -65,7 +65,6 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
     
     public double maxVoltRecoveryTime = 15.0;// in second, start counting when the fault is cleared
     
-    public String[] studyCases = {};
     public String[] faultBusCandidates = {}; //"Bus4", "Bus15", "Bus21"
     public double[] faultStartTimeCandidates = {0.05};
     public double[] faultDurationCandidates = {0.0, 0.05, 0.08};

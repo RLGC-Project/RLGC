@@ -1,6 +1,6 @@
 {
 	"environmentName": "IEEE39_FIDVR_LoadShedding",
-	"studyCaseFolder": "testData\\IEEE39",
+	"studyCaseFolder": "testData\\IEEE39\\baseCases",
 	
 	"observationStateTypes": ["voltageMag"],
 	

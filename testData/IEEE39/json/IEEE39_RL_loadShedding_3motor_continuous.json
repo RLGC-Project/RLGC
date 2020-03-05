@@ -1,7 +1,7 @@
 {
 	"version" : 2,
 	"environmentName": "IEEE39_FIDVR_LoadShedding_Continuous_Action",
-	"studyCaseFolder": "testData\\IEEE39",
+	"studyCaseFolder": "testData\\IEEE39\\baseCases",
 	
 	"observationStateTypes": ["voltageMag"],
 	
