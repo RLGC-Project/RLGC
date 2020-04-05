@@ -5,10 +5,12 @@ import os
 
 
 java_port = 25332
+jar_file = "\lib\RLGCJavaServer0.89.jar"
 
 a = os.path.abspath(os.path.dirname(__file__))
 
 folder_dir = a[:-7]
+jar_path = folder_dir + jar_file
 
 case_files_array = []
 
@@ -28,8 +30,8 @@ import sys
 # This is to fix the issue of "ModuleNotFoundError" below
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))  
 
-from PowerDynSimEnvDef_v4 import PowerDynSimEnv
-env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,java_port)
+from PowerDynSimEnvDef_v5 import PowerDynSimEnv
+env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path,java_port)
 
 
 for i in range(5):

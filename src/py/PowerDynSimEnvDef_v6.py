@@ -93,6 +93,14 @@ def transfer2JavaStringAry(gateway, pyArray):
         i = i + 1
     return  strAry
 
+def transferJavaStringAry2Python(java_Str_ary):
+    size = len(java_Str_ary)
+    #print('java_Str_ary size =', size)
+    py_str_ary = []
+    for i in range(size):
+        py_str_ary.append(java_Str_ary[i])
+        #print('py_str_ary',i, py_str_ary[i])
+    return py_str_ary
 #
 # function to transfer data from Java_Collections array to python Numpy array
 #
@@ -385,6 +393,9 @@ class PowerDynSimEnv(gym.Env):
 
         self.server_process.terminate()
         print("Java server terminated with PID:", self.server_process.pid)
-        
+
+    def get_base_cases(self):
+        base_cases = transferJavaStringAry2Python(self.ipss_app.getBaseCases())
+        return base_cases
 
     # def _render(self, mode='human', close=False):

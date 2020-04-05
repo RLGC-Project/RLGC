@@ -42,6 +42,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from PowerDynSimEnvDef_v6 import PowerDynSimEnv
 env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path,java_port,folder_dir)
 
+print("all base cases:", env.get_base_cases())
+
 env.reset()
 for i in range(15):
     results = env.step([-.5,-0.3,-0.1]) # no action is applied
