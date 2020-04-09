@@ -1,6 +1,3 @@
-from py4j.java_gateway import (JavaGateway, GatewayParameters)
-from subprocess import call, Popen, PIPE
-
 import os, time
 
 

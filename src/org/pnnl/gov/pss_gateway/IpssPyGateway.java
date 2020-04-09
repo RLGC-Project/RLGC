@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.plaf.basic.BasicSliderUI.ActionScroller;
 
 import org.apache.commons.math3.analysis.function.Atan;
@@ -45,10 +46,13 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabLoad;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -1207,6 +1211,152 @@ public class IpssPyGateway {
 	public double[][] getActionValueRanges(){
 		return this.rlConfigBean.actionValueRanges;
 	}
+	
+	/**
+	 * Get on-line generation total real power, in PU
+	 * @return
+	 */
+	public double getTotalGenerationPU() {
+		double totalGen = 0;
+		for(BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
+			if(bus.isActive() && bus.isGen()) {
+				for(AclfGen gen: bus.getContributeGenList()) {
+					if(gen.isActive())
+					    totalGen += gen.getGen().getReal(); // Gen is pu on system mva base
+				}
+			}
+		}
+		
+		return totalGen;
+	}
+	
+	 /**
+	  * Get on-line generation total capacity (Pmax), in PU
+	  * @return
+	  */
+	public double getMaxOnlineGenerationCapacity() {
+		
+		double totalGenMax = 0;
+		for(BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
+			if(bus.isActive() && bus.isGen()) {
+				for(AclfGen gen: bus.getContributeGenList()) {
+					if(gen.isActive())
+					    totalGenMax += gen.getPGenLimit().getMax(); // Gen is pu on system mva base
+				}
+			}
+		}
+		
+		return totalGenMax; //convert from PU to MW.
+		
+	}
+	
+	/**
+	 * Get the generation active power in P.U. of each on-line generator, and return them in an array
+	 * @return double[]
+	 */
+	public double[] getGenerationPAry() {
+		
+		List<Double> genPList = new ArrayList<Double>();
+		for(BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
+			if(bus.isActive() && bus.isGen()) {
+				for(AclfGen gen: bus.getContributeGenList()) {
+					if(gen.isActive())
+						genPList.add(gen.getGen().getReal()); // Gen is pu on system mva base
+				}
+			}
+		}
+		
+		 double[] genPAry = genPList.stream().mapToDouble(Double::doubleValue).toArray();
+		 
+		 return genPAry;
+	}
+
+    
+    public double[] getGenerationPByZoneAry(int zoneNumber) {
+    	List<Double> genPList = new ArrayList<Double>();
+		for(BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
+			if(bus.isActive() && bus.isGen() && bus.getZone().getNumber()==zoneNumber) {
+				for(AclfGen gen: bus.getContributeGenList()) {
+					if(gen.isActive())
+						genPList.add(gen.getGen().getReal()); // Gen is pu on system mva base
+				}
+			}
+		}
+		
+		 double[] genPAry = genPList.stream().mapToDouble(Double::doubleValue).toArray();
+		 
+		 return genPAry;
+	}
+    
+    public double[] getGenerationPByAreaAry(int areaNumber) {
+    	List<Double> genPList = new ArrayList<Double>();
+		for(BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
+			if(bus.isActive() && bus.isGen() && bus.getArea().getNumber()==areaNumber) {
+				for(AclfGen gen: bus.getContributeGenList()) {
+					if(gen.isActive())
+						genPList.add(gen.getGen().getReal()); // Gen is pu on system mva base
+				}
+			}
+		}
+		
+		 double[] genPAry = genPList.stream().mapToDouble(Double::doubleValue).toArray();
+		 
+		 return genPAry;
+	}
+    
+	
+	/**
+	 * Get each load active power in P.U. and return them in an array
+	 * @return
+	 */
+    public double[] getLoadPAry() {
+    	List<Double> loadPList = new ArrayList<Double>();
+		for(BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
+			if(bus.isActive() && bus.isLoad()) {
+				for(AclfLoad load: bus.getContributeLoadList()) {
+					if(load.isActive())
+						loadPList.add(load.getLoad(bus.getVoltageMag()).getReal()); // Load is pu on system mva base
+				}
+			}
+		}
+		
+		 double[] loadPAry = loadPList.stream().mapToDouble(Double::doubleValue).toArray();
+		 
+		 return loadPAry;
+	}
+    
+    public double[] getLoadPByZoneAry(int zoneNumber) {
+    	List<Double> loadPList = new ArrayList<Double>();
+		for(BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
+			if(bus.isActive() && bus.isLoad()&& bus.getZone().getNumber()==zoneNumber) {
+				for(AclfLoad load: bus.getContributeLoadList()) {
+					if(load.isActive())
+						loadPList.add(load.getLoad(bus.getVoltageMag()).getReal()); // Load is pu on system mva base
+				}
+			}
+		}
+		
+		 double[] loadPAry = loadPList.stream().mapToDouble(Double::doubleValue).toArray();
+		 
+		 return loadPAry;
+	}
+    
+    public double[] getLoadPByAreaAry(int areaNumber) {
+    	List<Double> loadPList = new ArrayList<Double>();
+		for(BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
+			if(bus.isActive() && bus.isLoad()&& bus.getArea().getNumber()==areaNumber) {
+				for(AclfLoad load: bus.getContributeLoadList()) {
+					if(load.isActive())
+						loadPList.add(load.getLoad(bus.getVoltageMag()).getReal()); // Load is pu on system mva base
+				}
+			}
+		}
+		
+		 double[] loadPAry = loadPList.stream().mapToDouble(Double::doubleValue).toArray();
+		 
+		 return loadPAry;
+	}
+    
 
 	public void setLoggerLevel(int level) {
 		if(level>=2) {

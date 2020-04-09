@@ -309,7 +309,7 @@ class PowerDynSimEnv(gym.Env):
         # step-3 retrieve the state from InterPSS simulation service
 
         # observations is a Java_Collections array
-        observations = self.ipss_app.getEnvObservationsDbl2DAry()
+        observations = self.ipss_app.getEnvObservations()
 
         # convert it from Java_collections array to native Python array
         self.state = transfer2DJavaArray2NumpyArray(observations)
@@ -363,7 +363,7 @@ class PowerDynSimEnv(gym.Env):
         #self.state = None
 
         # observations is a Java_Collections array
-        observations = self.ipss_app.getEnvObservationsDbl2DAry();
+        observations = self.ipss_app.getEnvObservations();
 
         # convert it from Java_collections array to native Python array
         self.state = transfer2DJavaArray2NumpyArray(observations)

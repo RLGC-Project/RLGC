@@ -135,8 +135,16 @@ public class testIpssPyGateway {
 	        assertArrayEquals(observations[i], matrix[i], 1.0E-6);
 	    
 	    
-		
-		
+		// System generation info
+	    
+	    System.out.println("Generation real power ary = "+Arrays.toString(app.getGenerationPAry()));
+	    System.out.println("Area 1 Generation real power ary = "+Arrays.toString(app.getGenerationPByAreaAry(1)));
+	    
+	    
+	    // System load info
+	    System.out.println("Load real power ary = "+Arrays.toString(app.getLoadPAry()));
+	    
+	    System.out.println("Area 1 load real power ary = "+Arrays.toString(app.getLoadPByAreaAry(1)));
 	}
 	
 	//@Test
