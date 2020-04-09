@@ -402,5 +402,7 @@ class PowerDynSimEnv(gym.Env):
     def get_base_cases(self):
         base_cases = transferJavaStringAry2Python(self.ipss_app.getBaseCases())
         return base_cases
-
+    def get_generationP(self):
+        gen_power = list(self.ipss_app.getGenerationPAry())
+        return gen_power
     # def _render(self, mode='human', close=False):
