@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -334,9 +336,54 @@ public class IpssPyGateway {
 		return obs_action_dim_ary;
 		
 	}
+	/**
+	 * get flatten 1-D array 
+	 * @return
+	 */
+    public byte[] getEnvObservationsByte1DAry() {
+		/*
+		 * Based on https://stackoverflow.com/questions/39095994/fast-conversion-of-java-array-to-numpy-array-py4j?noredirect=1&lq=1
+		 */
+    	
+    	double[][] obs_ary = getEnvObservationsDbl2DAry();
+    	int iMax = obs_ary.length;
+    	int jMax = obs_ary[0].length;
+    	
+    	ByteBuffer dblBuffer = ByteBuffer.allocate(8+Double.BYTES*iMax*jMax); // header = 8 (2 ints), body = Double.BYTES*iMax*jMax)
+	    dblBuffer.order(ByteOrder.LITTLE_ENDIAN); // Java's default is big-endian
+
+	    dblBuffer.putInt(iMax);
+	    dblBuffer.putInt(jMax);
+	    // Copy ints from obs_Array into dblBuffer as bytes
+	    for (int i = 0; i < iMax; i++) {
+	        for (int j = 0; j < jMax; j++){
+	            dblBuffer.putDouble(obs_ary[i][j]);
+	        }
+	    }
+
+	    // Convert the ByteBuffer to a byte array and return it
+	    byte[] byteArray = dblBuffer.array();
+	    
+	    return byteArray;
+    	
+	}
+
+   
+	/**
+	 * get a flatten 1-D array of 2-D observations array for historical N steps that is internally saved in the form of new double[historyObservSize][record_size];
+	 * @return
+	 */
 	
+	public double[] getEnvObservationsDbl1DAry() {
+		/**
+		 * Based on https://stackoverflow.com/questions/2569279/how-to-flatten-2d-array-to-1d-array
+		 */
+		return Arrays.stream(getEnvObservationsDbl2DAry())
+		        .flatMapToDouble(Arrays::stream)
+		        .toArray();
+	}
 	//TODO hashtable to store the past N step internal "states" for output as an environment state
-    public double[][] getEnvObservations() {
+    public double[][] getEnvObservationsDbl2DAry() {
     	
     	 
     	int historyObservSize = this.rlConfigBean.historyObservationSize;
@@ -797,7 +844,7 @@ public class IpssPyGateway {
 			
 		}
 		
-		double[][] all_observ_states = getEnvObservations();
+		double[][] all_observ_states = getEnvObservationsDbl2DAry();
 		
 		
 		obsrv_size = all_observ_states[0].length;
@@ -1208,7 +1255,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.90, built on 4/5/2020");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.91, built on 4/8/2020");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

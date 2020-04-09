@@ -1,8 +1,10 @@
 package org.pnnl.gov.test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import org.interpss.numeric.util.NumericUtil;
@@ -49,7 +51,7 @@ public class testIpssPyGateway {
 		assertTrue(act_space_dim ==1);      //action space
 		
 		// check the environment observation after the initialization 
-		System.out.println(Arrays.toString(app.getEnvObservations()));
+		System.out.println(Arrays.toString(app.getEnvObservationsDbl2DAry()));
 		//[1.0, 1.0, 1.0, 1.0, 0.6530790652351373, 0.45873956913178054, 0.5579368433471502, 0.9172826085024869]
 
 		
@@ -65,7 +67,7 @@ public class testIpssPyGateway {
 		
 		
 		// output the observations
-		System.out.println(Arrays.toString(app.getEnvObservations()));
+		System.out.println(Arrays.toString(app.getEnvObservationsDbl2DAry()));
 		
 		// check the reward, it should be zero
 		System.out.println("at 0.1s, no action, reward = "+app.getReward());
@@ -74,7 +76,7 @@ public class testIpssPyGateway {
 		
 		// run one environmentStep with one brake action
 		app.nextStepDynSim(stepTimeInSec, new double[]{1.0}, "discrete");
-		System.out.println(Arrays.toString(app.getEnvObservations()));
+		System.out.println(Arrays.toString(app.getEnvObservationsDbl2DAry()));
 		
 		//calculate the rewards
 		System.out.println("at 0.2s, 1 break action, reward = "+app.getReward());
@@ -111,6 +113,29 @@ public class testIpssPyGateway {
 		System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getBusVoltTable()));
 		assertTrue(NumericUtil.equals(app.getReward(), 0,1.0E-6));
 		
+		// check observations array conversion in the byte array form and and re-conversion
+		
+		double[][] observations =app.getEnvObservationsDbl2DAry();
+		System.out.println("Observations = "+Arrays.toString(observations[0]));
+		
+		java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(app.getEnvObservationsByte1DAry());
+		buf.order(ByteOrder.LITTLE_ENDIAN);
+		
+	    int n = buf.getInt(), m = buf.getInt();
+	    System.out.println("n, m ="+n+","+m);
+	    
+	    double[][] matrix = new double[n][m];
+	    for (int i = 0; i < n; ++i)
+	         for (int j = 0; j < m; ++j)
+	            matrix[i][j] = buf.getDouble();
+     
+	    System.out.println("Converted Observations = "+Arrays.toString(matrix[0]));
+	    
+	    for (int i = 0; i < n; ++i)
+	        assertArrayEquals(observations[i], matrix[i], 1.0E-6);
+	    
+	    
+		
 		
 	}
 	
@@ -139,7 +164,7 @@ public class testIpssPyGateway {
 			e.printStackTrace();
 		}
 		
-		double[][] obs_ary = app.getEnvObservations();
+		double[][] obs_ary = app.getEnvObservationsDbl2DAry();
 		assertTrue(obs_ary.length == 4);
 		assertTrue(obs_ary[0].length == 8);
 		
@@ -151,7 +176,7 @@ public class testIpssPyGateway {
 		
 		app.nextStepDynSim(0.1, new double[]{1.0}, "discrete");
 		
-		obs_ary = app.getEnvObservations();
+		obs_ary = app.getEnvObservationsDbl2DAry();
 		System.out.println("\n\nobservation array after 1 step with action");
 		System.out.println(Arrays.toString(obs_ary[0]));
 		System.out.println(Arrays.toString(obs_ary[1]));
@@ -160,7 +185,7 @@ public class testIpssPyGateway {
 		
 		app.nextStepDynSim(0.1, new double[]{1.0}, "discrete");
 		
-		obs_ary = app.getEnvObservations();
+		obs_ary = app.getEnvObservationsDbl2DAry();
 		System.out.println("\n\nobservation array after 2 steps with action");
 		System.out.println(Arrays.toString(obs_ary[0]));
 		System.out.println(Arrays.toString(obs_ary[1]));
@@ -170,7 +195,7 @@ public class testIpssPyGateway {
 		
 		app.nextStepDynSim(0.1, new double[]{1.0}, "discrete");
 		
-		obs_ary = app.getEnvObservations();
+		obs_ary = app.getEnvObservationsDbl2DAry();
 		System.out.println("\n\nobservation array after 3 steps with action");
 		System.out.println(Arrays.toString(obs_ary[0]));
 		System.out.println(Arrays.toString(obs_ary[1]));
@@ -180,7 +205,7 @@ public class testIpssPyGateway {
 		
 	    app.nextStepDynSim(0.1, new double[]{1.0}, "discrete");
 		
-		obs_ary = app.getEnvObservations();
+		obs_ary = app.getEnvObservationsDbl2DAry();
 		System.out.println("\n\nobservation array after 4 steps with action");
 		System.out.println(Arrays.toString(obs_ary[0]));
 		System.out.println(Arrays.toString(obs_ary[1]));
@@ -189,7 +214,7 @@ public class testIpssPyGateway {
 		
 	    app.nextStepDynSim(0.1, new double[]{1.0}, "discrete");
 		
-		obs_ary = app.getEnvObservations();
+		obs_ary = app.getEnvObservationsDbl2DAry();
 		System.out.println("\n\nobservation array after 5 steps with action");
 		System.out.println(Arrays.toString(obs_ary[0]));
 		System.out.println(Arrays.toString(obs_ary[1]));
@@ -253,7 +278,7 @@ public class testIpssPyGateway {
 //		assertTrue(act_space_dim ==1);      //action space
 		
 		// check the environment observation after the initialization 
-		System.out.println(Arrays.toString(app.getEnvObservations()));
+		System.out.println(Arrays.toString(app.getEnvObservationsDbl2DAry()));
 		//[1.0, 1.0, 1.0, 1.0, 0.6530790652351373, 0.45873956913178054, 0.5579368433471502, 0.9172826085024869]
 
 		
@@ -269,7 +294,7 @@ public class testIpssPyGateway {
 		
 		
 		// output the observations
-		System.out.println(Arrays.toString(app.getEnvObservations()));
+		System.out.println(Arrays.toString(app.getEnvObservationsDbl2DAry()));
 		
 		// check the reward, it should be zero
 		System.out.println("at 0.1s, no action, reward = "+app.getReward());
@@ -354,7 +379,7 @@ public class testIpssPyGateway {
 //		assertTrue(act_space_dim ==1);      //action space
 		
 		// check the environment observation after the initialization 
-		System.out.println(Arrays.toString(app.getEnvObservations()));
+		System.out.println(Arrays.toString(app.getEnvObservationsDbl2DAry()));
 		//[1.0, 1.0, 1.0, 1.0, 0.6530790652351373, 0.45873956913178054, 0.5579368433471502, 0.9172826085024869]
 
 		
@@ -370,7 +395,7 @@ public class testIpssPyGateway {
 		
 		
 		// output the observations
-		System.out.println(Arrays.toString(app.getEnvObservations()));
+		System.out.println(Arrays.toString(app.getEnvObservationsDbl2DAry()));
 		
 		// check the reward, it should be zero
 		System.out.println("at 0.1s, no action, reward = "+app.getReward());
@@ -471,7 +496,7 @@ public class testIpssPyGateway {
 //		assertTrue(act_space_dim ==1);      //action space
 		
 		// check the environment observation after the initialization 
-		System.out.println(Arrays.toString(app.getEnvObservations()));
+		System.out.println(Arrays.toString(app.getEnvObservationsDbl2DAry()));
 		//[1.0, 1.0, 1.0, 1.0, 0.6530790652351373, 0.45873956913178054, 0.5579368433471502, 0.9172826085024869]
 
 		
@@ -487,7 +512,7 @@ public class testIpssPyGateway {
 		
 		
 		// output the observations
-		System.out.println(Arrays.toString(app.getEnvObservations()));
+		System.out.println(Arrays.toString(app.getEnvObservationsDbl2DAry()));
 		
 		// check the reward, it should be zero
 		System.out.println("at 0.1s, no action, reward = "+app.getReward());

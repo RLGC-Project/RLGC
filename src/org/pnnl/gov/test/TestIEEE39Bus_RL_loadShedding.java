@@ -97,7 +97,11 @@ public class TestIEEE39Bus_RL_loadShedding {
 			e.printStackTrace();
 		}
 		
-		app.reset(0, 0, app.getFaultStartTimeCandidates()[0], 0.08);
+		
+		
+		app.reset(6, 0, app.getFaultStartTimeCandidates()[0], 0.08);
+		
+		
 		
 	
 		
@@ -128,6 +132,8 @@ public class TestIEEE39Bus_RL_loadShedding {
 //		FileUtil.writeText2File("C:\\Qiuhua\\DeepScienceLDRD\\output\\mach_angle_refbus1.csv",app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
 	
 		System.out.println("total rewards ="+app.getTotalRewards());
+		
+		System.out.println(Arrays.toString(app.getBaseCases()));
 		
 	}
 	
@@ -162,7 +168,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 		}
 		
 		app.reset(0, 0, 0.05, 0.08);
-		double[][] obs_ary = app.getEnvObservations();
+		double[][] obs_ary = app.getEnvObservationsDbl2DAry();
 		assertTrue(obs_ary.length == 4);
 		assertTrue(obs_ary[0].length == 16);
 		System.out.println(Arrays.toString(obs_ary[0]));
@@ -227,7 +233,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 			e.printStackTrace();
 		}
 		
-		double[][] obs_ary = app.getEnvObservations();
+		double[][] obs_ary = app.getEnvObservationsDbl2DAry();
 		assertTrue(obs_ary.length == 4);
 		assertTrue(obs_ary[0].length == 5);
 		
@@ -300,7 +306,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 			app.reset(0, 3, 0.05, 0.08);
 			
 			
-			double[][] obs_ary = app.getEnvObservations();
+			double[][] obs_ary = app.getEnvObservationsDbl2DAry();
 	//		assertTrue(obs_ary.length == 4);
 	//		assertTrue(obs_ary[0].length == 5);
 			
@@ -323,7 +329,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 				app.getReward();
 						
 				if(app.getDStabAlgo().getSimuTime()<0.30)
-				    System.out.println(Arrays.deepToString(app.getEnvObservations()));
+				    System.out.println(Arrays.deepToString(app.getEnvObservationsDbl2DAry()));
 				
 			}
 //		}
@@ -373,7 +379,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 		app.reset(0, 3, 0.05, 0.08);
 		
 		
-		double[][] obs_ary = app.getEnvObservations();
+		double[][] obs_ary = app.getEnvObservationsDbl2DAry();
 //		assertTrue(obs_ary.length == 4);
 //		assertTrue(obs_ary[0].length == 5);
 		
@@ -445,7 +451,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 		app.reset(0, 3, 0.05, 0.08);
 		
 		
-		double[][] obs_ary = app.getEnvObservations();
+		double[][] obs_ary = app.getEnvObservationsDbl2DAry();
 //		assertTrue(obs_ary.length == 4);
 //		assertTrue(obs_ary[0].length == 5);
 		
@@ -488,7 +494,6 @@ public class TestIEEE39Bus_RL_loadShedding {
 //			    System.out.println(Arrays.deepToString(app.getEnvironmentObversations()));
 //			
 		}
-		
 		
 		
 		//System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachSpeedTable()));

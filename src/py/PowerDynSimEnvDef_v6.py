@@ -74,7 +74,12 @@ def referback(actions, cnts):
 
 
 
-
+def createNumpyAryFromJavaByte1DAry(javaByte1DAry):
+    iMax, jMax = np.frombuffer(javaByte1DAry, dtype=np.uint8, count=2) # get the size from the header
+    print(iMax, jMax)
+    temp_ary = np.frombuffer(javaByte1DAry, dtype=np.float, offset=8) # read the body, skip the header 8 bytes
+    dblAry = temp_ary.reshape((iMax, jMax))
+    return dblAry
 
 def transfer2JavaDblAry(gateway, pyArray, size):
     dblAry = gateway.new_array(gateway.jvm.double, size)
@@ -304,7 +309,7 @@ class PowerDynSimEnv(gym.Env):
         # step-3 retrieve the state from InterPSS simulation service
 
         # observations is a Java_Collections array
-        observations = self.ipss_app.getEnvObservations()
+        observations = self.ipss_app.getEnvObservationsDbl2DAry()
 
         # convert it from Java_collections array to native Python array
         self.state = transfer2DJavaArray2NumpyArray(observations)
@@ -358,7 +363,7 @@ class PowerDynSimEnv(gym.Env):
         #self.state = None
 
         # observations is a Java_Collections array
-        observations = self.ipss_app.getEnvObservations();
+        observations = self.ipss_app.getEnvObservationsDbl2DAry();
 
         # convert it from Java_collections array to native Python array
         self.state = transfer2DJavaArray2NumpyArray(observations)
@@ -377,7 +382,7 @@ class PowerDynSimEnv(gym.Env):
         self.ipss_app.reset(case_Idx,fault_bus_idx,fault_start_time,fault_duation_time)
 
         # observations is a Java_Collections array
-        observations = self.ipss_app.getEnvObservations()
+        observations = self.ipss_app.getEnvObservationsDbl2DAry()
 
         # convert it from Java_collections array to native Python array
         self.state = transfer2DJavaArray2NumpyArray(observations)

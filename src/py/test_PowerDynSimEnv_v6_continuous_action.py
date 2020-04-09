@@ -6,7 +6,7 @@ import os, time
 
 java_port = 25338
 
-jar_file = "\lib\RLGCJavaServer0.89.jar"
+jar_file = "\lib\RLGCJavaServer0.90.jar"
 
 a = os.path.abspath(os.path.dirname(__file__))
 
@@ -16,16 +16,7 @@ jar_path = folder_dir + jar_file
 
 case_files_array = []
 
-###-------uncomment below four lines for linux-------------------------
-# case_files_array[0] = folder_dir + '/testData/IEEE39/IEEE39bus_multiloads_xfmr4_smallX_v30.raw'
-#
-# case_files_array[1] = folder_dir + '/testData/IEEE39/IEEE39bus_3AC.dyr'
-#
-# dyn_config_file = folder_dir + '/testData/IEEE39/json/IEEE39_dyn_config.json'
-#
-# rl_config_file = folder_dir + '/testData/IEEE39/json/IEEE39_RL_loadShedding_3motor_continuous.json'
 
-###-------uncomment below four lines for Windows -------------------------
 case_files_array.append(folder_dir + '/testData/IEEE39/IEEE39bus_multiloads_xfmr4_smallX_v30.raw')
 
 case_files_array.append(folder_dir + '/testData/IEEE39/IEEE39bus_3AC.dyr')

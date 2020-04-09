@@ -1,4 +1,12 @@
 =====================
+V0.91 transfer the observation array in byte array to python.
+
+
+=====================
+V0.90 to fix bugs in the load models.
+
+
+=====================
 V0.89 add the capability of selecting different base cases.
 
 
