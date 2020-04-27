@@ -400,9 +400,15 @@ class PowerDynSimEnv(gym.Env):
         print("Java server terminated with PID:", self.server_process.pid)
 
     def get_base_cases(self):
-        base_cases = transferJavaStringAry2Python(self.ipss_app.getBaseCases())
+        base_cases = list(self.ipss_app.getBaseCases())
         return base_cases
-    def get_generationP(self):
-        gen_power = list(self.ipss_app.getGenerationPAry())
+    def get_observation_names(self):
+        obs_names = list(self.ipss_app.getEnvObservationNames())
+        return obs_names
+    def get_all_generator_activePower(self):
+        gen_power = np.array(list(self.ipss_app.getGenerationPAry()))
         return gen_power
+    def get_all_load_activePower(self):
+        load_power = np.array(list(self.ipss_app.getLoadPAry()))
+        return load_power
     # def _render(self, mode='human', close=False):

@@ -2,7 +2,7 @@
 import os, time
 
 
-java_port = 25338
+java_port = 25337
 
 jar_file = "\lib\RLGCJavaServer0.91.jar"
 
@@ -32,6 +32,12 @@ from PowerDynSimEnvDef_v7 import PowerDynSimEnv
 env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path,java_port,folder_dir)
 
 print("all base cases:", env.get_base_cases())
+
+print("observation names:",env.get_observation_names())
+
+print("all generator active power:", env.get_all_generator_activePower())
+
+print("all load active power:", env.get_all_load_activePower())
 
 env.reset()
 for i in range(15):

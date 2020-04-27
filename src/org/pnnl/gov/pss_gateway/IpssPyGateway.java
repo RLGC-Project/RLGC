@@ -90,6 +90,7 @@ public class IpssPyGateway {
 	LinkedHashMap<String,Double> obsrv_genSpd = null;
 	LinkedHashMap<String,Double> obsrv_genAng = null;
 	LinkedHashMap<String,Double> obsrv_genP = null;
+	LinkedHashMap<String,Double> obsrv_genQ = null;
 	LinkedHashMap<String,Double> obsrv_loadP = null;
 	LinkedHashMap<String,Double> obsrv_loadQ = null;
 	
@@ -132,7 +133,14 @@ public class IpssPyGateway {
 	boolean isFirstInit = true;
 	
 	String absolutePath2DataFolder = null;
+	
+	double[][] all_observ_states = null;
+	
 	List<String> baseCaseFiles = null;
+	List<Double> all_observ_states_list = null;
+	List<String> actionBusIdList = new ArrayList<>();
+	
+	
 	
 	public IpssPyGateway() {
 		IpssCorePlugin.init();
@@ -734,18 +742,20 @@ public class IpssPyGateway {
     	int [] initDimAry = null;
     	this.stepReward = 0.0;
     	this.totalRewards = 0.0;
-    	this.isSimulationDone = false;
     	this.internalSimStepNum = 0;
     	this.internalObsrvRecordNum = 0;
     	
+    	this.isSimulationDone = false;
     	this.applyFaultDuringInitialization = false;
-    	this.observationHistoryRecord = new Hashtable<>();
-    	this.faultStartTime = faultStartTime;
-    	this.faultDuration = faultDuration;
-    	
     	this.isActionApplied = false;
+    	
+    	this.observationHistoryRecord.clear();
+    	
     	this.agentActionValuesAry = null;
     	this.sm= null;
+    	
+    	this.faultStartTime = faultStartTime;
+    	this.faultDuration = faultDuration;
     	
     	
         //update caseInputFiles using the base case associated with the input case index 
@@ -781,7 +791,7 @@ public class IpssPyGateway {
     		this.faultBusId= null;
     	}
     	
-    	if (this.faultBusId!= null && faultStartTime> 0 && faultDuration > 0){
+    	if (this.faultBusId!= null && faultStartTime>= 0.0 && faultDuration > 0.0){
     	    dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(this.faultBusId,this.dsNet,SimpleFaultCode.GROUND_3P, new Complex(0.0), null,faultStartTime,faultDuration),"3phaseFault@"+faultBusId);
     	}
     	else{
@@ -848,7 +858,7 @@ public class IpssPyGateway {
 			
 		}
 		
-		double[][] all_observ_states = getEnvObservationsDbl2DAry();
+		all_observ_states = getEnvObservationsDbl2DAry();
 		
 		
 		obsrv_size = all_observ_states[0].length;
@@ -894,7 +904,7 @@ public class IpssPyGateway {
 			throw new Error("The ctionTypes in the RL Json configuration file is empty");
 		}
 		
-		List<String> actionBusIdList = new ArrayList<>();
+		actionBusIdList.clear();
 		
 		for(DStabBus bus:dsNet.getBusList()) {
 			if(bus.isActive()) {
@@ -1003,30 +1013,107 @@ public class IpssPyGateway {
     private double[] saveInternalObservations() {
     	// TODO consider to save the past N-step states and retrieve the past states when necessary
     	
-        String[] obsrvStateTypes = rlConfigBean.observationStateTypes;
+//        String[] obsrvStateTypes = rlConfigBean.observationStateTypes;
 		
 		String scopeType = rlConfigBean.observationScopeType;
 		
-		String[] scopeAry = rlConfigBean.observationScopeAry;
+//		String[] scopeAry = rlConfigBean.observationScopeAry;
 		
 		
 		// The reason of using separate hashtables to store the states is to keep the same type of states in a consecutive form, as the implementation below is iterating over
 		// the bus, not the state type first.
-		// Then different types of states are concatted to one large vector/array 
+		// Then different types of states are concatted to one large vector/array
+		
+		for(String stateType : rlConfigBean.observationStateTypes) {
+			if(stateType.equalsIgnoreCase("frequency")) {
+				
+				if(obsrv_freq==null)
+					obsrv_freq = new LinkedHashMap<>();
+				else {
+					obsrv_freq.clear();
+				}
+			}
+			else if(stateType.equalsIgnoreCase("voltageMag")) {
+				
+				if(obsrv_voltMag==null)
+					obsrv_voltMag = new LinkedHashMap<>();
+				else {
+					obsrv_voltMag.clear();
+					
+				}
+			}
+			else if(stateType.equalsIgnoreCase("voltageAng")) {
+				
+				if(obsrv_voltAng==null)
+					obsrv_voltAng = new LinkedHashMap<>();
+				else {
+					obsrv_voltAng.clear();
+					
+				}
+			}
+			
+			else if(stateType.equalsIgnoreCase("loadP")) {
+				
+				if(obsrv_loadP==null)
+					obsrv_loadP = new LinkedHashMap<>();
+				else {
+					obsrv_loadP.clear();
+					
+				}
+				
+			}
+			else if(stateType.equalsIgnoreCase("loadQ")) {
+				if(obsrv_loadQ==null)
+					obsrv_loadQ = new LinkedHashMap<>();
+				else {
+					obsrv_loadQ.clear();
+					
+				}
+			}
+			else if(stateType.equalsIgnoreCase("genSpeed")) {
+
+				if(obsrv_genSpd==null)
+					obsrv_genSpd = new LinkedHashMap<>();
+				else {
+					obsrv_genSpd.clear();
+				}
+			}
+            else if(stateType.equalsIgnoreCase("genAngle")) {
+            	if(obsrv_genAng==null)
+        			obsrv_genAng = new LinkedHashMap<>();
+        		else {
+        			obsrv_genAng.clear();
+        		}
+			}
+            else if(stateType.equalsIgnoreCase("genP")) {
+            	if(obsrv_genP==null)
+        			obsrv_genP = new LinkedHashMap<>();
+        		else {
+        			obsrv_genP.clear();
+        		}
+			} 
+			
+            else if(stateType.equalsIgnoreCase("genQ")) {
+            	if(obsrv_genQ==null)
+        			obsrv_genQ = new LinkedHashMap<>();
+        		else {
+        			obsrv_genQ.clear();
+        		}
+			} 
+		}
+	
 		
 		
-		obsrv_freq = new LinkedHashMap<>();
-		obsrv_voltMag = new LinkedHashMap<>();
-		obsrv_voltAng = new LinkedHashMap<>();
-		obsrv_genSpd = new LinkedHashMap<>();
-		obsrv_genAng = new LinkedHashMap<>();
-		obsrv_genP = new LinkedHashMap<>();
-		obsrv_loadP = new LinkedHashMap<>();
-		obsrv_loadQ = new LinkedHashMap<>();
+		//obsrv_genP = new LinkedHashMap<>();
+		
 		
 		obsrv_state_names = new ArrayList<>();
 		
-		List<Double> all_observ_states = new ArrayList<>();
+		if(all_observ_states_list == null)
+			all_observ_states_list = new ArrayList<>();
+		else {
+			all_observ_states_list.clear();
+		}
 		
 		
 		// iterate over all buses and check whether it fits the scope (type and definitions);
@@ -1035,35 +1122,35 @@ public class IpssPyGateway {
 		for(DStabBus bus:dsNet.getBusList()) {
 			if(bus.isActive()) {
 				if(bus.getBaseVoltage()>=rlConfigBean.observationVoltThreshold)
-				  if(isBusWithinScope(bus,scopeType,scopeAry)) {
+				  if(isBusWithinScope(bus,scopeType,rlConfigBean.observationScopeAry)) {
 					
-					for(String stateType : obsrvStateTypes) {
+					for(String stateType : rlConfigBean.observationStateTypes) {
 						if(stateType.equalsIgnoreCase("frequency")) {
 							
 							obsrv_freq.put("frequency_"+bus.getId(),bus.getFreq());
 						}
-						if(stateType.equalsIgnoreCase("voltageMag")) {
+						else if(stateType.equalsIgnoreCase("voltageMag")) {
 							
 							obsrv_voltMag.put("voltageMag_"+bus.getId(),bus.getVoltageMag());
 						}
-						if(stateType.equalsIgnoreCase("voltageAng")) {
+						else if(stateType.equalsIgnoreCase("voltageAng")) {
 							
 							obsrv_voltAng.put("voltageAng_"+bus.getId(),bus.getVoltageAng());
 						}
 						
-						if(stateType.equalsIgnoreCase("loadP")) {
+						else if(stateType.equalsIgnoreCase("loadP")) {
 							if(bus.isLoad() || bus.getContributeLoadList().size()>0) {
 								//TODO need to update to capture dynamic total loads
 							   obsrv_loadP.put("loadP_"+bus.getId(),bus.getLoadP());
 							}
 						}
-						if(stateType.equalsIgnoreCase("loadQ")) {
+						else if(stateType.equalsIgnoreCase("loadQ")) {
 							if(bus.isLoad() || bus.getContributeLoadList().size()>0) {
 							  //TODO need to update to capture dynamic total loads
 							   obsrv_loadQ.put("loadQ_"+bus.getId(),bus.getLoadQ());
 							}
 						}
-						if(stateType.equalsIgnoreCase("genSpeed")) {
+						else if(stateType.equalsIgnoreCase("genSpeed")) {
 							if(bus.isGen() || bus.getContributeGenList().size()>0) {
 							    for(AclfGen gen: bus.getContributeGenList()) {
 							       if(gen.isActive()) {
@@ -1078,7 +1165,7 @@ public class IpssPyGateway {
 							   
 							}
 						}
-						if(stateType.equalsIgnoreCase("genAngle")) {
+						else if(stateType.equalsIgnoreCase("genAngle")) {
 							if(bus.isGen() || bus.getContributeGenList().size()>0) {
 							    for(AclfGen gen: bus.getContributeGenList()) {
 							       if(gen.isActive()) {
@@ -1086,6 +1173,36 @@ public class IpssPyGateway {
 							    	   if(dsGen.getMach()!=null) {
 								         
 								           obsrv_genAng.put("genAngle_"+dsGen.getMach().getId(),dsGen.getMach().getAngle());
+							    	   }
+							       }
+							    }
+							   
+							}
+						}
+						
+						else if(stateType.equalsIgnoreCase("genP")) {
+							if(bus.isGen() || bus.getContributeGenList().size()>0) {
+							    for(AclfGen gen: bus.getContributeGenList()) {
+							       if(gen.isActive()) {
+							    	   DStabGen dsGen = (DStabGen) gen;
+							    	   if(dsGen.getMach()!=null) {
+								         
+								           obsrv_genP.put("genP_"+dsGen.getMach().getId(),dsGen.getMach().getPe());
+							    	   }
+							       }
+							    }
+							   
+							}
+						}
+						
+						else if(stateType.equalsIgnoreCase("genQ")) {
+							if(bus.isGen() || bus.getContributeGenList().size()>0) {
+							    for(AclfGen gen: bus.getContributeGenList()) {
+							       if(gen.isActive()) {
+							    	   DStabGen dsGen = (DStabGen) gen;
+							    	   if(dsGen.getMach()!=null) {
+								         
+								           obsrv_genQ.put("genQ_"+dsGen.getMach().getId(),dsGen.getMach().getQGen());
 							    	   }
 							       }
 							    }
@@ -1101,25 +1218,46 @@ public class IpssPyGateway {
 		}
 		
 		// values
-		all_observ_states.addAll(obsrv_freq.values());
-		all_observ_states.addAll(obsrv_voltMag.values());
-		all_observ_states.addAll(obsrv_voltAng.values());
-		all_observ_states.addAll(obsrv_loadP.values());
-		all_observ_states.addAll(obsrv_loadQ.values());
-		all_observ_states.addAll(obsrv_genSpd.values());
-		all_observ_states.addAll(obsrv_genAng.values());
+		if(obsrv_freq!=null) {
+			all_observ_states_list.addAll(obsrv_freq.values());
+			// the observed state names
+			obsrv_state_names.addAll(obsrv_freq.keySet());
+		}
+		if(obsrv_voltMag!=null) {
+			all_observ_states_list.addAll(obsrv_voltMag.values());
+			obsrv_state_names.addAll(obsrv_voltMag.keySet());
+		}
+		if(obsrv_voltAng!=null) {
+			all_observ_states_list.addAll(obsrv_voltAng.values());
+			obsrv_state_names.addAll(obsrv_voltAng.keySet());
+		}
+		if(obsrv_loadP!=null) {
+			all_observ_states_list.addAll(obsrv_loadP.values());
+			obsrv_state_names.addAll(obsrv_loadP.keySet());
+		}
+		if(obsrv_loadQ!=null) {
+			all_observ_states_list.addAll(obsrv_loadQ.values());
+			obsrv_state_names.addAll(obsrv_loadQ.keySet());
+		}
+		if(obsrv_genSpd!=null) {
+			all_observ_states_list.addAll(obsrv_genSpd.values());
+			obsrv_state_names.addAll(obsrv_genSpd.keySet());
+		}
+		if(obsrv_genAng!=null) {
+			all_observ_states_list.addAll(obsrv_genAng.values());
+			obsrv_state_names.addAll(obsrv_genAng.keySet());
+		}
+		if(obsrv_genP!=null) {
+			all_observ_states_list.addAll(obsrv_genP.values());
+			obsrv_state_names.addAll(obsrv_genP.keySet());
+		}
+		if(obsrv_genQ!=null) {
+			all_observ_states_list.addAll(obsrv_genQ.values());
+			obsrv_state_names.addAll(obsrv_genQ.keySet());
+		}
 		
-		// the observed state names
-		obsrv_state_names.addAll(obsrv_freq.keySet());
-		obsrv_state_names.addAll(obsrv_voltMag.keySet());
-		obsrv_state_names.addAll(obsrv_voltAng.keySet());
-		obsrv_state_names.addAll(obsrv_loadP.keySet());
-		obsrv_state_names.addAll(obsrv_loadQ.keySet());
-		obsrv_state_names.addAll(obsrv_genSpd.keySet());
-		obsrv_state_names.addAll(obsrv_genAng.keySet());
 		
-		
-		observationAry = Stream.of(all_observ_states.toArray(new Double[0])).mapToDouble(Double::doubleValue).toArray();
+		observationAry = Stream.of(all_observ_states_list.toArray(new Double[0])).mapToDouble(Double::doubleValue).toArray();
 		
 		
 		//append the action status observations to <this.observationHistoryRecord>
@@ -1405,7 +1543,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.91, built on 4/8/2020");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.92, built on 4/16/2020");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();
