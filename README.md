@@ -1,9 +1,8 @@
 # RLGC
 Repo of the Reinforcement Learning for Grid Control (RLGC) Project. 
 
-In this project, we leverage the InterPSS simulation platform (http://www.interpss.org/) as the power system simulator. We develop a OpenAI gym (https://gym.openai.com/) compatible power grid dynamic simulation environment for developing, testing and benchmarking reinforcement learning algorithms for grid control.
+In this project, We explore to use deep reinforcement learning methods for control and decision-making problems in power systems.we leverage the InterPSS simulation platform (http://www.interpss.org/) as the power system simulator. We develop an OpenAI gym (https://gym.openai.com/) compatible power grid dynamic simulation environment for developing, testing and benchmarking reinforcement learning algorithms for grid control.
 
-We explore to use deep reinforcement learning methods for control and decision-making problems in power systems.
 
 *NOTE:* RLGC is under active development and may change at any time. Feel free to provide feedback and comments.
     
