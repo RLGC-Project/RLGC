@@ -1,5 +1,7 @@
 # RLGC
-Repo of the Reinforcement Learning for Grid Control (RLGC) Project
+Repo of the Reinforcement Learning for Grid Control (RLGC) Project. 
+
+In this project, we leverage the InterPSS simulation platform (http://www.interpss.org/) as the power system simulator. We develop a OpenAI gym (https://gym.openai.com/) compatible power grid dynamic simulation environment for developing, testing and benchmarking reinforcement learning algorithms for grid control.
 
 We explore to use deep reinforcement learning methods for control and decision-making problems in power systems.
 
@@ -24,7 +26,7 @@ We explore to use deep reinforcement learning methods for control and decision-m
      conda env create -f environment. yml
      ``` 
      
-     or you can create your own environment
+     or you can create your own environment. The main dependent modules/libs include gym, tensorflow, py4j, numpy, matplotlib, stable-baselines,jupyter-notebooks
      ```
      cd RLGC    
      conda env create --name <your-env-name>  
