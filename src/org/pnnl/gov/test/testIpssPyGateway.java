@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import org.interpss.numeric.matrix.MatrixUtil;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.util.FileUtil;
 import org.junit.Test;
@@ -142,9 +143,20 @@ public class testIpssPyGateway {
 	    
 	    
 	    // System load info
-	    System.out.println("Load real power ary = "+Arrays.toString(app.getLoadPAry()));
+	    System.out.println("Load real power ary = " + Arrays.toString(app.getLoadPAry()));
 	    
-	    System.out.println("Area 1 load real power ary = "+Arrays.toString(app.getLoadPByAreaAry(1)));
+	    System.out.println("Area 1 load real power ary = " + Arrays.toString(app.getLoadPByAreaAry(1)));
+	    
+	    // system adjacency matrix
+	    System.out.println("Adjacency Matrix = "+ MatrixUtil.toString(app.getAdjacencyMatrix()));
+	    
+	    // system branch status
+	    
+	    app.setBranchStatus(5,6,"1",0);
+	    System.out.println("turned off branch 5_6(1) status = "+ app.getDStabAlgo().getNetwork().getBranch("Bus5", "Bus6", "1").isActive());
+	   
+	    app.setBranchStatus(5,6,"1",1);
+	    System.out.println("turned on branch 5_6(1) status = "+ app.getDStabAlgo().getNetwork().getBranch("Bus5", "Bus6", "1").isActive());
 	}
 	
 	//@Test
@@ -507,6 +519,12 @@ public class testIpssPyGateway {
 		System.out.println(Arrays.toString(app.getEnvObservationsDbl2DAry()));
 		//[1.0, 1.0, 1.0, 1.0, 0.6530790652351373, 0.45873956913178054, 0.5579368433471502, 0.9172826085024869]
 
+		System.out.println("load bus&id within action scope: ");
+		System.out.println(Arrays.toString(app.getLoadIdWithinActionScope()));
+		System.out.println("load power within action scope: ");
+		System.out.println(Arrays.toString(app.getLoadPWithinActionScope()));
+		
+		System.out.println(Arrays.toString(app.getLoadIdWithinActionScope()));
 		
 		//run one environmentStep without action
 		

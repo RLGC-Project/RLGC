@@ -29,7 +29,10 @@ import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.IpssFileAdapter.FileFormat;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
+import org.interpss.numeric.sparse.ISparseEqnInteger;
+import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.cmd.json.BaseJSONBean;
 import org.interpss.pssl.plugin.cmd.json.DstabRunConfigBean;
 import org.pnnl.gov.json.ReinforcementLearningConfigBean;
@@ -49,6 +52,7 @@ import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.net.Branch;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
@@ -108,7 +112,7 @@ public class IpssPyGateway {
 	String dynSimConfigJsonFile, rlConfigJsonFile;
 	
 	
-	DstabRunConfigBean dstabBean = null;
+	DstabRunConfigBean dynSimConfigBean = null;
 	ReinforcementLearningConfigBean rlConfigBean = null;
 	
 	
@@ -173,27 +177,27 @@ public class IpssPyGateway {
 		dynSimConfigJsonFile=dynSimConfigFile;
 		rlConfigJsonFile = rlConfigFile;
 		
-		dstabBean  = BaseJSONBean.toBean(dynSimConfigFile, DstabRunConfigBean.class);
+		dynSimConfigBean  = BaseJSONBean.toBean(dynSimConfigFile, DstabRunConfigBean.class);
 		
 		if(caseFiles!=null) {
 			caseInputFiles =caseFiles;
 		}
-		else if (dstabBean!=null) {
+		else if (dynSimConfigBean!=null) {
 			boolean hasSeqFile = false;
-			caseInputFiles[0] = dstabBean.acscConfigBean.runAclfConfig.aclfCaseFileName;
+			caseInputFiles[0] = dynSimConfigBean.acscConfigBean.runAclfConfig.aclfCaseFileName;
 			
-			if(dstabBean.acscConfigBean.seqFileName.length()>0) {
-				caseInputFiles[1] = dstabBean.acscConfigBean.seqFileName;
+			if(dynSimConfigBean.acscConfigBean.seqFileName.length()>0) {
+				caseInputFiles[1] = dynSimConfigBean.acscConfigBean.seqFileName;
 				hasSeqFile =true;
 			}
 			
-			if(dstabBean.dynamicFileName.length()>0) {
+			if(dynSimConfigBean.dynamicFileName.length()>0) {
 				
 				if(hasSeqFile) {
-					caseInputFiles[2] = dstabBean.dynamicFileName;
+					caseInputFiles[2] = dynSimConfigBean.dynamicFileName;
 				}
 				else {
-					caseInputFiles[1] = dstabBean.dynamicFileName;
+					caseInputFiles[1] = dynSimConfigBean.dynamicFileName;
 				    caseInputFiles = Arrays.copyOfRange(caseInputFiles, 0,2);
 				}
 			}
@@ -237,7 +241,7 @@ public class IpssPyGateway {
 			isFirstInit = false;
 		}
 		
-		System.out.println("\nPower flow base case files:");
+		System.out.println("\nImported power flow base case files:");
 		System.out.println(Arrays.toString(baseCaseFiles.toArray())+"\n");
 		
 		// initialize the variables for storing the history observation records
@@ -272,18 +276,18 @@ public class IpssPyGateway {
 			
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-			dstabAlgo.setSimuStepSec(dstabBean.simuTimeStepSec);
-			dstabAlgo.setTotalSimuTimeSec(dstabBean.totalSimuTimeSec);
+			dstabAlgo.setSimuStepSec(dynSimConfigBean.simuTimeStepSec);
+			dstabAlgo.setTotalSimuTimeSec(dynSimConfigBean.totalSimuTimeSec);
 			
-			if(!dstabBean.referenceGeneratorId.isEmpty())
-				dstabAlgo.setRefMachine(this.dsNet.getMachine(dstabBean.referenceGeneratorId));
+			if(!dynSimConfigBean.referenceGeneratorId.isEmpty())
+				dstabAlgo.setRefMachine(this.dsNet.getMachine(dynSimConfigBean.referenceGeneratorId));
 			
 			// apply fault
 			
 			if(this.applyFaultDuringInitialization) {
-				this.faultBusId = dstabBean.acscConfigBean.faultBusId;
-				faultStartTime = dstabBean.eventStartTimeSec;
-				faultDuration = dstabBean.eventDurationSec;
+				this.faultBusId = dynSimConfigBean.acscConfigBean.faultBusId;
+				faultStartTime = dynSimConfigBean.eventStartTimeSec;
+				faultDuration = dynSimConfigBean.eventDurationSec;
 				
 				if (this.faultBusId!= null && faultStartTime> 0 && faultDuration > 0)
 		    	    dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(this.faultBusId,this.dsNet,SimpleFaultCode.GROUND_3P, new Complex(0.0), null,faultStartTime,faultDuration),"3phaseFault@step-"+internalSimStepNum+"@"+faultBusId);
@@ -295,14 +299,14 @@ public class IpssPyGateway {
 			
 			this.sm = new StateMonitor();
 			
-			this.sm.addBusStdMonitor(dstabBean.monitoringBusAry);
-			this.sm.addGeneratorStdMonitor(dstabBean.monitoringGenAry);
+			this.sm.addBusStdMonitor(dynSimConfigBean.monitoringBusAry);
+			this.sm.addGeneratorStdMonitor(dynSimConfigBean.monitoringGenAry);
 			
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(this.sm);
 			
-			dstabAlgo.setOutPutPerSteps(dstabBean.outputPerNSteps);
+			dstabAlgo.setOutPutPerSteps(dynSimConfigBean.outputPerNSteps);
 			
 			
 			//initialize dyn simulation
@@ -708,7 +712,7 @@ public class IpssPyGateway {
 				simFlag = dstabAlgo.solveDEqnStep(true);
 				
 				// record observations at the predefined steps
-				if(this.internalSimStepNum % this.dstabBean.outputPerNSteps == 0){
+				if(this.internalSimStepNum % this.dynSimConfigBean.outputPerNSteps == 0){
 					
 				   // save the internal observations, the time step will be the same as the envStepTimeInSec.
 				    saveInternalObservations();
@@ -808,7 +812,18 @@ public class IpssPyGateway {
 	private boolean loadStudyCase(String[] caseFiles) {
 		//IpssCorePlugin.init();
 		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
-		PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
+		
+		if(dynSimConfigBean.acscConfigBean.runAclfConfig.format!=IpssAdapter.FileFormat.PSSE) {
+			IpssLogger.getLogger().severe("Error: Input file is not PSS/E format based on the configuration json file input. Currently ONLY PSS/E format is supported");
+			return false;
+		}
+		
+		
+		org.interpss.pssl.plugin.IpssAdapter.PsseVersion ver = dynSimConfigBean.acscConfigBean.runAclfConfig.version;
+		
+		PsseVersion version = (ver == org.interpss.pssl.plugin.IpssAdapter.PsseVersion.PSSE_30?PsseVersion.PSSE_30:PsseVersion.PSSE_33);
+				
+		PSSEAdapter adapter = new PSSEAdapter(version);
 		
 		System.out.println("case files:"+Arrays.toString(caseFiles));
 		adapter.parseInputFile(NetType.DStabNet, caseFiles);
@@ -818,7 +833,7 @@ public class IpssPyGateway {
 		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
 		if (!new ODMDStabParserMapper(msg)
 					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
+			IpssLogger.getLogger().severe("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
 			return false;
 		}
 		
@@ -943,7 +958,7 @@ public class IpssPyGateway {
 		
 	}
 	
-	private boolean isBusWithinScope(DStabBus bus, String scopeType,String[] scopeAry) {
+	private boolean isBusWithinScope(BaseDStabBus<?,?> bus, String scopeType,String[] scopeAry) {
 		boolean inScope = true;
 		
 		if (scopeType.equalsIgnoreCase("Bus")) {
@@ -1347,6 +1362,21 @@ public class IpssPyGateway {
 	}
 	
 	public double[][] getActionValueRanges(){
+		// check the consistency of dimension of actionValueRanges array and the action space
+		if(this.rlConfigBean.actionValueRanges.length!=this.actionBusIdList.size()) {
+			double[][] temp = this.rlConfigBean.actionValueRanges;
+			
+			if(temp.length>this.actionBusIdList.size()) {
+				this.rlConfigBean.actionValueRanges = Arrays.copyOfRange(temp, 0, this.actionBusIdList.size());
+			}
+			else {// temp.length<this.actionBusIdList.size(), need to extend the array by copy 
+				double[][] temp2 = new double[this.actionBusIdList.size()][temp[0].length];
+				System.arraycopy(temp, 0, temp2, 0, temp.length);
+				Arrays.fill(temp2, temp.length, this.actionBusIdList.size(), temp[temp.length-1]);
+				this.rlConfigBean.actionValueRanges = temp2;
+			}
+		}
+		
 		return this.rlConfigBean.actionValueRanges;
 	}
 	
@@ -1495,6 +1525,128 @@ public class IpssPyGateway {
 		 return loadPAry;
 	}
     
+   public double[] getLoadPWithinActionScope() {
+    	List<Double> loadPList = new ArrayList<Double>();
+		for(BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
+			if(bus.isActive() && bus.isLoad() && 
+			   isBusWithinScope(bus,rlConfigBean.actionScopeType,rlConfigBean.actionScopeAry)) {
+				 for(AclfLoad load: bus.getContributeLoadList()) {
+					if(load.isActive())
+						loadPList.add(load.getLoad(bus.getVoltageMag()).getReal()); // Load is pu on system mva base
+				 }
+			}
+		}
+		
+		 double[] loadPAry = loadPList.stream().mapToDouble(Double::doubleValue).toArray();
+		 
+		 return loadPAry;
+    }
+   
+   public String[] getLoadIdWithinActionScope() {
+   	List<String> loadIdList = new ArrayList<>();
+		for(BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
+			if(bus.isActive() && bus.isLoad() && 
+			   isBusWithinScope(bus,rlConfigBean.actionScopeType,rlConfigBean.actionScopeAry)) {
+				 for(AclfLoad load: bus.getContributeLoadList()) {
+					if(load.isActive())
+						loadIdList.add(bus.getId()+"_"+load.getId()); // Load is pu on system mva base
+				 }
+			}
+		}
+		
+		 String[] loadIdAry = loadIdList.toArray(new String[0]);
+		 
+		 return loadIdAry;
+   }
+   
+   public int[][] getAdjacencyMatrix() {
+	   int k = 0;
+	   for (BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
+		   bus.setSortNumber(k);
+		   k++;
+	   }
+	   
+	   ISparseEqnInteger  aMatrix= this.dsNet.formAdjacencyMatrix();
+	   int dim= aMatrix.getDimension();
+	   int[][] adjMatrix = new int[dim][dim];
+	   for(int i=0;i<dim;i++){
+			for(int j=0;j<dim;j++){
+				adjMatrix[i][j]=aMatrix.getAijElement(i,j);
+					
+			}
+			
+		}
+	   
+	   return adjMatrix;
+   }
+   
+   public byte[] getAdjacencyMatrixByte1DAry() {
+	   int[][] adj_ary = getAdjacencyMatrix();
+   	   int iMax = adj_ary.length;
+       int jMax = adj_ary[0].length;
+   	
+   	    ByteBuffer intBuffer = ByteBuffer.allocate(8+Integer.BYTES*iMax*jMax); // header = 8 (2 ints), body = Double.BYTES*iMax*jMax)
+	    intBuffer.order(ByteOrder.LITTLE_ENDIAN); // Java's default is big-endian
+
+	    intBuffer.putInt(iMax);
+	    intBuffer.putInt(jMax);
+	    // Copy ints from obs_Array into dblBuffer as bytes
+	    for (int i = 0; i < iMax; i++) {
+	        for (int j = 0; j < jMax; j++){
+	            intBuffer.putInt(adj_ary[i][j]);
+	        }
+	    }
+
+	    // Convert the ByteBuffer to a byte array and return it
+	    byte[] byteArray = intBuffer.array();
+	    
+	    return byteArray;
+   	
+   }
+   
+   public void setBranchStatus(int fromNum, int toNum, String cirId, int status) {
+	   String fBusId = "Bus"+fromNum;
+	   String tBusId = "Bus"+toNum;
+	   
+	   Branch bra = dsNet.getBranch(fBusId, tBusId, cirId);
+	   
+	   if(bra!=null) {
+		   bra.setStatus(status==0?false:true);
+	   }
+	   else {
+		   IpssLogger.getLogger().severe("No branch is found for the input fromNum, toNum and cirId: "+ fromNum+","+toNum+","+cirId);;
+	   }
+	   
+   }
+   
+   public void setGeneratorStatus(int busNum, String genId, int status) {
+	   String busId =  "Bus"+busNum;
+	   DStabBus bus = dsNet.getBus(busId);
+	   
+	 
+	   if(bus.getContributeGenList().size()>0) {
+		   for(AclfGen gen:bus.getContributeGenList()) {
+			   if(gen.getId().equals(genId)){
+				   gen.setStatus(status==0?false:true);
+			   }
+		   }
+	   }
+	   
+   }
+   
+   public void setLoadStatus(int busNum, String loadId, int status) {
+	   String busId =  "Bus"+busNum;
+	   DStabBus bus = dsNet.getBus(busId);
+	   
+	 
+	   if(bus.getContributeLoadList().size()>0) {
+		   for(AclfLoad load:bus.getContributeLoadList()) {
+			   if(load.getId().equals(loadId)){
+				   load.setStatus(status==0?false:true);
+			   }
+		   }
+	   }
+   }
 
 	public void setLoggerLevel(int level) {
 		if(level>=2) {
@@ -1543,7 +1695,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.92, built on 4/16/2020");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.93, built on 5/1/2020");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

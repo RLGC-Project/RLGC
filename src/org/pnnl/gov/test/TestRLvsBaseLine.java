@@ -69,7 +69,7 @@ public class TestRLvsBaseLine {
 			e.printStackTrace();
 		}
 		
-		double[][] obs_ary = app.getEnvObservations();
+		double[][] obs_ary = app.getEnvObservationsDbl2DAry();
 		assertTrue(obs_ary.length == 1);
 		assertTrue(obs_ary[0].length == 8);
 		System.out.println(Arrays.toString(obs_ary[0]));
@@ -124,7 +124,7 @@ public class TestRLvsBaseLine {
 			e.printStackTrace();
 		}
 		
-		double[][] obs_ary = app.getEnvObservations();
+		double[][] obs_ary = app.getEnvObservationsDbl2DAry();
 		assertTrue(obs_ary.length == 1);
 		assertTrue(obs_ary[0].length == 8);
 		System.out.println(Arrays.toString(obs_ary[0]));

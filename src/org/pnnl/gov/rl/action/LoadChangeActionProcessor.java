@@ -79,7 +79,7 @@ public class LoadChangeActionProcessor extends AbstractActionProcessor implement
 				
 				
 			    
-			    if (changeFraction==0.0){
+			    if (Math.abs(changeFraction)<1.0E-6){
 			    	IpssLogger.getLogger().info("Action at " +busId +" is NO-operation.");
 			    	i++;
 			    	continue;
@@ -118,6 +118,7 @@ public class LoadChangeActionProcessor extends AbstractActionProcessor implement
 		    		   
 		    		   this.dstabNet.getYMatrix().addToA(deltaYii, sortNum, sortNum);
 		    		   this.dstabNet.setYMatrixDirty(true);
+		    		   //System.out.println("Change Ymatrix for load shedding");
 		    	   }
 		    	  
 		       }

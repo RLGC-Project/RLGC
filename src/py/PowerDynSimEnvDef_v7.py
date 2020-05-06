@@ -74,10 +74,10 @@ def referback(actions, cnts):
 
 
 
-def createNumpyAryFromJavaByte1DAry(javaByte1DAry):
+def createNumpyAryFromJavaByte1DAry(javaByte1DAry, datatype):
     iMax, jMax = np.frombuffer(javaByte1DAry, dtype=np.intc, count=2) # get the size from the header
     #print(iMax, jMax)
-    temp_ary = np.frombuffer(javaByte1DAry, dtype=np.float, offset=8) # read the body, skip the header 8 bytes
+    temp_ary = np.frombuffer(javaByte1DAry, dtype=datatype, offset=8) # read the body, skip the header 8 bytes
     dblAry = temp_ary.reshape((iMax, jMax))
     return dblAry
 
@@ -161,7 +161,7 @@ class PowerDynSimEnv(gym.Env):
         
         # change from global to class-level variable to support parallel process
 
-        self.server_process = Popen(["java", "-jar", jar_file, str(server_port_num), str(verbose)], close_fds=True)
+        self.server_process = Popen(["java", "-Xmx1024m", "-jar", jar_file, str(server_port_num), str(verbose)], close_fds=True)
         print("IPSS-RL Java server lib path:", jar_file)
         print("Java server started with PID:", self.server_process.pid)
         time.sleep(5.0)
@@ -312,7 +312,7 @@ class PowerDynSimEnv(gym.Env):
         observations = self.ipss_app.getEnvObservationsByte1DAry()
 
         # convert it from Java_collections array to native Python array
-        self.state = createNumpyAryFromJavaByte1DAry(observations)
+        self.state = createNumpyAryFromJavaByte1DAry(observations,datatype=np.float)
         
         #print('observation shape: ', np.shape(self.state))
 
@@ -366,7 +366,7 @@ class PowerDynSimEnv(gym.Env):
         observations = self.ipss_app.getEnvObservationsByte1DAry()
 
         # convert it from Java_collections array to native Python array
-        self.state = createNumpyAryFromJavaByte1DAry(observations)
+        self.state = createNumpyAryFromJavaByte1DAry(observations,datatype=np.float)
 
         #print(self.state)
 
@@ -385,7 +385,7 @@ class PowerDynSimEnv(gym.Env):
         observations = self.ipss_app.getEnvObservationsByte1DAry()
 
         # convert it from Java_collections array to native Python array
-        self.state = createNumpyAryFromJavaByte1DAry(observations)
+        self.state = createNumpyAryFromJavaByte1DAry(observations,datatype=np.float)
 
         self.steps_beyond_done = None
         self.restart_simulation = True
@@ -411,4 +411,19 @@ class PowerDynSimEnv(gym.Env):
     def get_all_load_activePower(self):
         load_power = np.array(list(self.ipss_app.getLoadPAry()))
         return load_power
+    def get_load_activePower_within_action_scope(self):
+        load_power = np.array(list(self.ipss_app.getLoadPWithinActionScope()))
+        return load_power
+    def get_load_id_within_action_scope(self):
+        load_bus_ids = list(self.ipss_app.getLoadIdWithinActionScope())
+        return load_bus_ids
+    def get_adjacency_matrix(self):
+         # adjacency is a Java_Collections 1-D byte array
+        adj_matrix_ary = self.ipss_app.getAdjacencyMatrixByte1DAry()
+        # convert it from Java_collections array to Python numpy array
+        return createNumpyAryFromJavaByte1DAry(adj_matrix_ary,datatype=np.int)
+
+    def set_branch_status(self, from_bus_num, to_bus_num, cir_id_str, status_int):
+        self.ipss_app.setBranchStatus(from_bus_num, to_bus_num, cir_id_str, status_int)
+
     # def _render(self, mode='human', close=False):

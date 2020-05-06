@@ -4,7 +4,7 @@ import os, time
 
 java_port = 25337
 
-jar_file = "\lib\RLGCJavaServer0.91.jar"
+jar_file = "\lib\RLGCJavaServer0.93.jar"
 
 a = os.path.abspath(os.path.dirname(__file__))
 
@@ -38,6 +38,14 @@ print("observation names:",env.get_observation_names())
 print("all generator active power:", env.get_all_generator_activePower())
 
 print("all load active power:", env.get_all_load_activePower())
+
+print("active power of all loads within action scope:", env.get_load_activePower_within_action_scope())
+
+print("ids of all loads within action scope:", env.get_load_id_within_action_scope())
+
+print("adjacency matrix:",env.get_adjacency_matrix())
+
+env.set_branch_status(1,2,'1',0)
 
 env.reset()
 for i in range(15):
