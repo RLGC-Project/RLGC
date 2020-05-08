@@ -189,6 +189,9 @@ class PowerDynSimEnv(gym.Env):
 
         #initialize the power system simulation service
 
+        # set the IpssLogger level: 0 OFF, 1 Warning, >=2 Fine
+        self.ipss_app.setLoggerLevel(verbose)
+
 
         #  {observation_history_length,observation_space_dim, action_location_num, action_level_num};
         dim_ary= self.ipss_app.initStudyCase(_case_files,dyn_sim_config_file,rl_config_file,data_path)
@@ -312,7 +315,7 @@ class PowerDynSimEnv(gym.Env):
         observations = self.ipss_app.getEnvObservationsByte1DAry()
 
         # convert it from Java_collections array to native Python array
-        self.state = createNumpyAryFromJavaByte1DAry(observations,datatype=np.float)
+        self.state = createNumpyAryFromJavaByte1DAry(observations,datatype=np.float64)
         
         #print('observation shape: ', np.shape(self.state))
 
@@ -366,7 +369,7 @@ class PowerDynSimEnv(gym.Env):
         observations = self.ipss_app.getEnvObservationsByte1DAry()
 
         # convert it from Java_collections array to native Python array
-        self.state = createNumpyAryFromJavaByte1DAry(observations,datatype=np.float)
+        self.state = createNumpyAryFromJavaByte1DAry(observations,datatype=np.float64)
 
         #print(self.state)
 
@@ -385,7 +388,7 @@ class PowerDynSimEnv(gym.Env):
         observations = self.ipss_app.getEnvObservationsByte1DAry()
 
         # convert it from Java_collections array to native Python array
-        self.state = createNumpyAryFromJavaByte1DAry(observations,datatype=np.float)
+        self.state = createNumpyAryFromJavaByte1DAry(observations,datatype=np.float64)
 
         self.steps_beyond_done = None
         self.restart_simulation = True
@@ -421,7 +424,7 @@ class PowerDynSimEnv(gym.Env):
          # adjacency is a Java_Collections 1-D byte array
         adj_matrix_ary = self.ipss_app.getAdjacencyMatrixByte1DAry()
         # convert it from Java_collections array to Python numpy array
-        return createNumpyAryFromJavaByte1DAry(adj_matrix_ary,datatype=np.int)
+        return createNumpyAryFromJavaByte1DAry(adj_matrix_ary,datatype=np.int32)
 
     def set_branch_status(self, from_bus_num, to_bus_num, cir_id_str, status_int):
         self.ipss_app.setBranchStatus(from_bus_num, to_bus_num, cir_id_str, status_int)

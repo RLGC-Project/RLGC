@@ -22,14 +22,13 @@ from stable_baselines import results_plotter
 from stable_baselines.sac.policies import MlpPolicy
 from stable_baselines.sac.policies import FeedForwardPolicy
 from stable_baselines import SAC
-import baselines.common.tf_util as U
 
 
 np.random.seed(19)
 
 # config the RLGC Java Sever
 java_port = 25034
-jar_file = '/lib/RLGCJavaServer0.87.jar'
+jar_file = '/lib/RLGCJavaServer0.93.jar'
 
 
 a = os.path.abspath(os.path.dirname(__file__))
@@ -129,7 +128,7 @@ import time
 start = time.time()
 dataname = "multistep_obs11_randftd3_randbus3_3motor_continuous_prenull_100w"
 
-from PowerDynSimEnvDef_v5 import PowerDynSimEnv
+from PowerDynSimEnvDef_v7 import PowerDynSimEnv
 env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path,java_port)
 
 
