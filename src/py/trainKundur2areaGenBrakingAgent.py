@@ -13,7 +13,7 @@ from gym import wrappers
 from datetime import datetime
 import time
 
-from PowerDynSimEnvDef_v5 import PowerDynSimEnv
+from PowerDynSimEnvDef_v7 import PowerDynSimEnv
 
 
 from baselines import deepq
@@ -25,7 +25,7 @@ np.random.seed(19)
 
 # config the RLGC Java Sever
 java_port = 25003
-jar_file = '/lib/RLGCJavaServer0.87.jar'
+jar_file = '/lib/RLGCJavaServer0.93.jar'
 
 # This is to fix the issue of "ModuleNotFoundError" below
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))  
@@ -97,6 +97,8 @@ def main(learning_rate):
     print("Saving final model to: "+savedModel + "/" + model_name + "_lr_%s_90w.pkl" % (str(learning_rate)))
     act.save(savedModel + "/" + model_name + "_lr_%s_90w.pkl" % (str(learning_rate)))
 
+    
+
 #aa._act_params
 
 
@@ -139,6 +141,8 @@ end = time.time()
 
 print("total running time is %s" % (str(end - start)))
 
+# close py4j java server connection
+env.close_connection()
 
 print("Finished!!")
 
