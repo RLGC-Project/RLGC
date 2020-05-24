@@ -74,12 +74,11 @@ def callback(lcl, glb):
 
 
 
-def main(learning_rate):
+def main(learning_rate, env):
    
     tf.reset_default_graph()    # to avoid the conflict with the existing parameters, but this is not suggested for reuse parameters
     graph = tf.get_default_graph()
-    #print(graph.get_operations())
-    env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path, java_port)
+    #print(graph.get_operations()
 
 
     act = deepq.learn(
@@ -129,7 +128,7 @@ for ll in [0.0001]:
     step_starttime = list()
     step_durationtime = list()
 
-    main(ll)
+    main(ll, env)
 
     np.save(os.path.join(storedData, "step_rewards_lr_%s_" % str(ll) + dataname), np.array(step_rewards))
     np.save(os.path.join(storedData, "step_actions_lr_%s_" % str(ll) + dataname), np.array(step_actions))
