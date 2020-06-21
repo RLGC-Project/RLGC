@@ -27,6 +27,7 @@ import org.apache.commons.math3.ode.FirstOrderConverter;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
+import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter.FileFormat;
@@ -149,6 +150,7 @@ public class IpssPyGateway {
 	public IpssPyGateway() {
 		IpssCorePlugin.init();
 	    IpssLogger.getLogger().setLevel(Level.OFF);
+	    ODMLogger.getLogger().setLevel(Level.OFF);
 	    
 		System.out.println("Working Directory = " +
 	              System.getProperty("user.dir"));
@@ -1651,12 +1653,15 @@ public class IpssPyGateway {
 	public void setLoggerLevel(int level) {
 		if(level>=2) {
 			IpssLogger.getLogger().setLevel(Level.FINE);
+			ODMLogger.getLogger().setLevel(Level.FINE);
 		}
 		else if(level==1) {
 			IpssLogger.getLogger().setLevel(Level.WARNING);
+			ODMLogger.getLogger().setLevel(Level.WARNING);
 		}
 		else {
 			IpssLogger.getLogger().setLevel(Level.OFF);
+			ODMLogger.getLogger().setLevel(Level.OFF);
 		}
 	}
 	

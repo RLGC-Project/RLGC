@@ -1,4 +1,10 @@
 =====================
+V0.93 improve data adapter for PSS/E V33 and add APIs for accessing Adjacency Matrix, setting branch, generator and load status
+
+=====================
+V0.92 add APIs to access generation and load information
+
+=====================
 V0.91 transfer the observation array in byte array to python.
 
 

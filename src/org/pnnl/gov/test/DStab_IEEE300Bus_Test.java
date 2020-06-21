@@ -234,7 +234,7 @@ public class DStab_IEEE300Bus_Test {
 			}
 			
 			app.reset(0, 2, 1.0, 0.10);
-			double[][] obs_ary = app.getEnvObservations();
+			double[][] obs_ary = app.getEnvObservationsDbl2DAry();
 			
 			// zone 1, observations: 108 buses (>60kv)
 			// zone 1, actions: 20 buses
@@ -294,15 +294,15 @@ public class DStab_IEEE300Bus_Test {
 		public void test_IEEE300_loadshedding_RL_continuous_moreActionBuses() {
 			
 		    IpssPyGateway app = new IpssPyGateway();
-		    app.setLoggerLevel(1);
+		    app.setLoggerLevel(1); //0 - no logging, 1 - warming, 2 - info
 		    
 			String[] caseFiles = new String[]{
 					"testData/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
 					"testData/IEEE300/IEEE300_dyn_cmld_zone1.dyr"
 					};
 			
-			String dynSimConfigFile = "testData\\IEEE300\\json\\IEEE300_dyn_config.json"; // define dynamic simulation and monitoring
-			String rlConfigJsonFile = "testData\\IEEE300\\json\\IEEE300_RL_loadShedding_zone1_continuous_LSTM_new_morefaultbuses_moreActionBuses_testing.json";
+			String dynSimConfigFile = "testData\\ACTIVSg2000\\json\\Texas2000_dyn_config.json"; // define dynamic simulation and monitoring
+			String rlConfigJsonFile = "testData\\ACTIVSg2000\\json\\Texas2000_RL_loadShedding_zone3.json";
 			
 			int[] ob_act_space_dim = null;
 			
@@ -317,8 +317,8 @@ public class DStab_IEEE300Bus_Test {
 				e.printStackTrace();
 			}
 			
-			app.reset(0, 0, 0.0, 0.08);
-			double[][] obs_ary = app.getEnvObservations();
+			app.reset(0, 1, 0.0, 0.08);
+			double[][] obs_ary = app.getEnvObservationsDbl2DAry();
 			
 			// zone 1, observations: 108 buses (>60kv)
 			// zone 1, actions: 20 buses
@@ -339,17 +339,39 @@ public class DStab_IEEE300Bus_Test {
 
 			
 			// for faults at bus idx 1 or 2, fault duration 0.1 s
-			double[] actions = new double[] {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
-                    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
-                    -1, -1, -1, -1, -1, -1};
+//			double[] actions = new double[] {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+//                    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+//                    -1, -1, -1, -1, -1, -1};
 			
+			// to check COMPLDW 3-phase induction motor when  all loads at 3 buses are shedded.
+//			double[] actions = new double[] {-1, -1, -1};
+			
+			double[] actions = new double[] {-0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, 
+                    -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, -0.2, 
+                    -0.2, -0.2, -0.2, -0.2, -0.2, -0.2};
+			
+			int i = 0;
 			while(app.getDStabAlgo().getSimuTime()<app.getDStabAlgo().getTotalSimuTimeSec()) {
 				System.out.println("Time ="+app.getDStabAlgo().getSimuTime());
-				if(app.getDStabAlgo().getSimuTime()>1.1 && app.getDStabAlgo().getSimuTime()<1.85){
-					app.nextStepDynSim(0.1, actions, "continuous");
-				} 
-				else
-					app.nextStepDynSim(0.1, new double[46], "continuous");
+				
+				app.nextStepDynSim(0.1, actions, "continuous");
+				
+//				if(app.getDStabAlgo().getSimuTime()<0.1)
+//				     app.nextStepDynSim(0.1, new double[46], "continuous");
+//				else if(i<5) {
+//					app.nextStepDynSim(0.1, actions, "continuous");
+//					i++;
+//				}
+//				else {
+//					app.nextStepDynSim(0.1, new double[46], "continuous");
+//				}
+				   
+				
+//				if(app.getDStabAlgo().getSimuTime()>1.1 && app.getDStabAlgo().getSimuTime()<1.85){
+//					app.nextStepDynSim(0.1, actions, "continuous");
+//				} 
+//				else
+//					app.nextStepDynSim(0.1, new double[46], "continuous");
 //				
 				//app.nextStepDynSim(0.1, new double[20], "continuous");
 				//app.nextStepDynSim(0.1, actions, "continuous");
@@ -366,8 +388,8 @@ public class DStab_IEEE300Bus_Test {
 			
 			
 			
-			//System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachSpeedTable()));
-//			System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
+			System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachSpeedTable()));
+			System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
 			System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getBusVoltTable()));
 //			FileUtil.writeText2File("C:\\Qiuhua\\DeepScienceLDRD\\output\\mach_angle_refbus1.csv",app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
 		

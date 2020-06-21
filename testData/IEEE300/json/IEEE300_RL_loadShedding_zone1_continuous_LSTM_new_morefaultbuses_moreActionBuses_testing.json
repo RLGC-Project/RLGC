@@ -1,0 +1,53 @@
+{
+	"version" : 2,
+	"environmentName": "IEEE300_FIDVR_LoadShedding_Continuous_Action",
+	"studyCaseFolder": "testData\\IEEE300",
+	
+	"observationStateTypes": ["voltageMag"],
+	
+	"observationScopeType": "Zone",
+			
+	"observationScopeAry": ["1"],
+	
+	"observationVoltThreshold":60000.0,
+	
+	"historyObservationSize": 1,
+	
+	"actionTypes": ["LoadShed"],
+	
+	"actionScopeType":"Bus",
+	
+	"actionScopeAry":["Bus20_loadBus","Bus17_loadBus","Bus5_loadBus","Bus61_loadBus","Bus73_loadBus","Bus59_loadBus","Bus76_loadBus","Bus44_loadBus","Bus14_loadBus","Bus38_loadBus","Bus10_loadBus","Bus526_loadBus","Bus15_loadBus","Bus6_loadBus","Bus71_loadBus","Bus319_loadBus","Bus108_loadBus","Bus1190_loadBus","Bus57_loadBus","Bus9_loadBus","Bus49_loadBus","Bus1_loadBus","Bus41_loadBus","Bus37_loadBus","Bus99_loadBus","Bus11_loadBus","Bus22_loadBus","Bus102_loadBus","Bus21_loadBus","Bus77_loadBus","Bus63_loadBus","Bus27_loadBus","Bus53_loadBus","Bus98_loadBus","Bus90_loadBus","Bus110_loadBus","Bus52_loadBus","Bus94_loadBus","Bus8_loadBus","Bus13_loadBus","Bus47_loadBus","Bus72_loadBus","Bus2_loadBus","Bus70_loadBus","Bus33_loadBus","Bus562_loadBus"],
+	
+	"envStepTimeInSec": 0.1,
+	
+	"actionLevels":[0.0, -1.0],
+	
+    "unstableReward": -10000,
+    
+    "actionPenalty": 150.0,
+    
+    "invalidActionPenalty": 3.0,
+    
+    "preFaultActionPenalty":100,
+    
+    "observationWeight":30.0,
+    
+    "includeActionStatusInObservations": true,
+
+    "minVoltRecoveryLevel":0.90, 
+            
+    "maxVoltRecoveryTime":5.0,
+	
+    "faultBusCandidates": ["Bus23"],
+	
+    "faultStartTimeCandidates": [1.0],
+	
+    "faultDurationCandidates": [0.08],
+	
+    
+    "actionSpaceType":"continuous",
+
+    "actionValueRanges": [[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0],[-0.2, 0],[-0.2, 0], [-0.2, 0],[-0.2, 0],[-0.2, 0], [-0.2, 0], [-0.2, 0]]
+	
+}
