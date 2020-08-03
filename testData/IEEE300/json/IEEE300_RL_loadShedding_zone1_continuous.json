@@ -1,0 +1,55 @@
+{
+	"version" : 2,
+	"environmentName": "IEEE300_FIDVR_LoadShedding_Continuous_Action",
+	"studyCaseFolder": "testData\\IEEE300",
+	
+	"observationStateTypes": ["voltageMag"],
+	
+	"observationScopeType": "Zone",
+			
+	"observationScopeAry": ["1"],
+	
+	"observationVoltThreshold":60000.0,
+	
+	"historyObservationSize": 10,
+	
+	"actionTypes": ["LoadShed"],
+	
+	"actionScopeType":"Bus",
+	
+	"actionScopeAry":["Bus1_loadBus","Bus2_loadBus", "Bus5_loadBus","Bus6_loadBus", "Bus8_loadBus","Bus9_loadBus","Bus10_loadBus", "Bus11_loadBus","Bus13_loadBus",
+	                  "Bus14_loadBus","Bus15_loadBus","Bus17_loadBus","Bus20_loadBus","Bus21_loadBus", "Bus22_loadBus","Bus27_loadBus","Bus33_loadBus","Bus37_loadBus","Bus94_loadBus", "Bus319_loadBus"],
+	
+	"envStepTimeInSec": 0.1,
+	
+	"actionLevels":[0.0, -1.0],
+	
+    "unstableReward": -10000,
+    
+    "actionPenalty": 150.0,
+    
+    "invalidActionPenalty": 3.0,
+    
+    "preFaultActionPenalty":100,
+    
+    "observationWeight":30.0,
+    
+    "includeActionStatusInObservations": true,
+
+    "minVoltRecoveryLevel":0.90, 
+            
+    "maxVoltRecoveryTime":5.0,
+	
+    "faultBusCandidates": ["Bus3","Bus5","Bus12"],
+	
+    "faultStartTimeCandidates": [1.0],
+	
+    "faultDurationCandidates": [0.0, 0.05, 0.08],
+	
+    
+    "actionSpaceType":"continuous",
+    
+    "actionValueRanges": [[-1.0, 0], [-1.0, 0], [-1.0, 0],[-1.0, 0], [-1.0, 0], [-1.0, 0],[-1.0, 0], [-1.0, 0], [-1.0, 0],[-1.0, 0],[-1.0, 0], [-1.0, 0], [-1.0, 0],[-1.0, 0], [-1.0, 0], [-1.0, 0],[-1.0, 0], [-1.0, 0], [-1.0, 0],[-1.0, 0]]
+    
+	
+}

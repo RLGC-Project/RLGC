@@ -20,6 +20,7 @@
 
 # compile files
 *.pyc
+*__pycache__
 
 # result files
 *.npy

@@ -1,0 +1,53 @@
+{
+	"version" : 2,
+	"environmentName": "Texas2000_FIDVR_LoadShedding_Continuous_Action",
+	"studyCaseFolder": "testData\\ACTIVSg2000",
+	
+	"observationStateTypes": ["voltageMag"],
+	
+	"observationScopeType": "Zone",
+			
+	"observationScopeAry": ["3","4"],
+	
+	"observationVoltThreshold":60000.0,
+	
+	"historyObservationSize": 1,
+	
+	"actionTypes": ["LoadShed"],
+	
+	"actionScopeType":"Zone",
+	
+	"actionScopeAry": ["3","4"],
+	
+	"envStepTimeInSec": 0.1,
+	
+	"actionLevels":[0.0, -1.0],
+	
+    "unstableReward": -10000,
+    
+    "actionPenalty": 50.0,
+    
+    "invalidActionPenalty": 3.0,
+    
+    "preFaultActionPenalty":100,
+    
+    "observationWeight":10.0,
+    
+    "includeActionStatusInObservations": true,
+
+    "minVoltRecoveryLevel":0.90, 
+            
+    "maxVoltRecoveryTime":5.0,
+	
+    "faultBusCandidates": ["Bus7186"],
+	
+    "faultStartTimeCandidates": [1.0],
+	
+    "faultDurationCandidates": [0, 0.05, 0.1],
+	
+    
+    "actionSpaceType":"continuous",
+
+    "actionValueRanges": [[-0.2, 0]]
+	
+}

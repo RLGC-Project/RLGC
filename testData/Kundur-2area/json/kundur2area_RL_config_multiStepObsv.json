@@ -26,11 +26,11 @@
     
     "actionLevels":[0, 1],
     
-    "faultBusCandidates": ["Bus9"],
+    "faultBusCandidates": ["Bus3"],
     
     "faultStartTimeCandidates": [1.0],
     
-    "faultDurationCandidates": [0.585]
+    "faultDurationCandidates": [0.581, 0.582, 0.582, 0.582, 0.585]
     
 	
 }

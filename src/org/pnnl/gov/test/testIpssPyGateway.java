@@ -123,7 +123,7 @@ public class testIpssPyGateway {
 		buf.order(ByteOrder.LITTLE_ENDIAN);
 		
 	    int n = buf.getInt(), m = buf.getInt();
-	    System.out.println("n, m ="+n+","+m);
+	    System.out.println("n, m = "+n+","+m);
 	    
 	    double[][] matrix = new double[n][m];
 	    for (int i = 0; i < n; ++i)

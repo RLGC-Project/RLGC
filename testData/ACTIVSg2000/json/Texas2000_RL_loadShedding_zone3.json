@@ -1,0 +1,53 @@
+{
+	"version" : 2,
+	"environmentName": "Texas2000_FIDVR_LoadShedding_Continuous_Action",
+	"studyCaseFolder": "testData\\ACTIVSg2000",
+	
+	"observationStateTypes": ["voltageMag"],
+	
+	"observationScopeType": "Zone",
+			
+	"observationScopeAry": ["3","4"],
+	
+	"observationVoltThreshold":60000.0,
+	
+	"historyObservationSize": 1,
+	
+	"actionTypes": ["LoadShed"],
+	
+	"actionScopeType":"Bus",
+	
+	"actionScopeAry":["Bus7093_loadBus","Bus7315_loadBus","Bus7242_loadBus","Bus7067_loadBus","Bus7185_loadBus","Bus7343_loadBus","Bus7386_loadBus","Bus7124_loadBus","Bus7427_loadBus","Bus7276_loadBus","Bus7249_loadBus","Bus7417_loadBus","Bus7155_loadBus","Bus7225_loadBus","Bus7028_loadBus","Bus7385_loadBus","Bus7298_loadBus","Bus7248_loadBus","Bus7214_loadBus","Bus7384_loadBus","Bus7183_loadBus","Bus7051_loadBus","Bus7052_loadBus","Bus7330_loadBus","Bus7088_loadBus","Bus7410_loadBus","Bus7222_loadBus","Bus7161_loadBus","Bus7362_loadBus","Bus7221_loadBus","Bus7087_loadBus","Bus7181_loadBus","Bus7180_loadBus","Bus7235_loadBus","Bus7344_loadBus","Bus7296_loadBus","Bus7336_loadBus","Bus7388_loadBus","Bus7316_loadBus","Bus7382_loadBus","Bus7120_loadBus","Bus7178_loadBus","Bus7229_loadBus","Bus7216_loadBus","Bus7188_loadBus","Bus7240_loadBus","Bus7089_loadBus","Bus7397_loadBus","Bus7425_loadBus","Bus7055_loadBus","Bus7399_loadBus","Bus7053_loadBus","Bus7091_loadBus","Bus7297_loadBus","Bus7094_loadBus","Bus7220_loadBus","Bus7127_loadBus","Bus7148_loadBus","Bus7395_loadBus","Bus7255_loadBus","Bus7256_loadBus","Bus7101_loadBus","Bus7039_loadBus","Bus7117_loadBus","Bus7246_loadBus","Bus7179_loadBus","Bus7017_loadBus","Bus7241_loadBus","Bus7049_loadBus"],
+	
+	"envStepTimeInSec": 0.1,
+	
+	"actionLevels":[0.0, -1.0],
+	
+    "unstableReward": -10000,
+    
+    "actionPenalty": 50.0,
+    
+    "invalidActionPenalty": 3.0,
+    
+    "preFaultActionPenalty":100,
+    
+    "observationWeight":10.0,
+    
+    "includeActionStatusInObservations": true,
+
+    "minVoltRecoveryLevel":0.90, 
+            
+    "maxVoltRecoveryTime":5.0,
+	
+    "faultBusCandidates": ["Bus7186"],
+	
+    "faultStartTimeCandidates": [1.0],
+	
+    "faultDurationCandidates": [0, 0.05, 0.1],
+	
+    
+    "actionSpaceType":"continuous",
+
+    "actionValueRanges": [[-0.2, 0]]
+	
+}

@@ -1,0 +1,48 @@
+{
+	"dynamicFileName": "testData/ACTIVSg2000/ACTIVSg2000_dyn_cmld_zone3_v1.dyr",
+	"dstabOutputFileName": "",
+	"dynMethod": "MODIFIED_EULER",
+	"totalSimuTimeSec": 7.0,
+	"simuTimeStepSec": 0.005,
+	"eventStartTimeSec": 1.0,
+	"eventDurationSec": 0.08,
+	"referenceGeneratorId": "",
+	"monitoringBusAry": ["Bus7093","Bus7315","Bus7242","Bus7067","Bus7185","Bus7343","Bus7386","Bus7124","Bus7427","Bus7276","Bus7249","Bus7417","Bus7155","Bus7225","Bus7028","Bus7385","Bus7298","Bus7248","Bus7214","Bus7384","Bus7183","Bus7051","Bus7052","Bus7330","Bus7088","Bus7410","Bus7222","Bus7161","Bus7362","Bus7221","Bus7087","Bus7181","Bus7180","Bus7235","Bus7344","Bus7296","Bus7336","Bus7388","Bus7316","Bus7382","Bus7120","Bus7178","Bus7229","Bus7216","Bus7188","Bus7240","Bus7089","Bus7397","Bus7425","Bus7055","Bus7399","Bus7053","Bus7091","Bus7297","Bus7094","Bus7220","Bus7127","Bus7148","Bus7395","Bus7255","Bus7256","Bus7101","Bus7039","Bus7117","Bus7246","Bus7179","Bus7017","Bus7241","Bus7049"],
+	"monitoringGenAry": ["Bus7353-mach1","Bus7167-mach1","Bus7170-mach1","Bus1050-mach1","Bus1080-mach1"],
+	"outputPerNSteps": 50,
+	"acscConfigBean": {
+		"seqFileName": "",
+		"acscOutputFileName": "",
+		"runAclf": false,
+		"runAclfConfig": {
+			"aclfCaseFileName": "testData/ACTIVSg2000/ACTIVSg2000.raw",
+			"aclfOutputFileName": "",
+			"format": "PSSE",
+			"version": "PSSE_33",
+			"lfMethod": "PQ",
+			"maxIteration": 20,
+			"tolerance": 1.0E-5,
+			"nonDivergent": false,
+			"initBusVoltage": false,
+			"accFactor": 1.0,
+			"dslRunnerClassName": "org.interpss.pssl.plugin.cmd.AclfDslRunner"
+		},
+		"type": "BUS_FAULT",
+		"category": "GROUND_3P",
+		"zLG": {
+			"re": 0.0,
+			"im": 0.0
+		},
+		"zLL": {
+			"re": 0.0,
+			"im": 0.0
+		},
+		"faultBusId": "Bus4",
+		"faultBranchFromId": "",
+		"faultBranchToId": "",
+		"faultBranchCirId": "",
+		"distance": 0.0,
+		"dslRunnerClassName": "org.interpss.pssl.plugin.cmd.AcscDslRunner"
+	}
+
+}

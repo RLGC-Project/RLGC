@@ -240,11 +240,13 @@ public class IpssPyGateway {
 				}
 			}
 			
+			System.out.println("\nImported power flow base case files:");
+			System.out.println(Arrays.toString(baseCaseFiles.toArray())+"\n");
+			
 			isFirstInit = false;
 		}
 		
-		System.out.println("\nImported power flow base case files:");
-		System.out.println(Arrays.toString(baseCaseFiles.toArray())+"\n");
+		
 		
 		// initialize the variables for storing the history observation records
 		observationHistoryRecord = new Hashtable<>();
@@ -811,7 +813,7 @@ public class IpssPyGateway {
     	
 	}
 	
-	private boolean loadStudyCase(String[] caseFiles) {
+	private boolean loadStudyCase(String[] caseFiles) {	
 		//IpssCorePlugin.init();
 		IPSSMsgHub msg = CoreCommonFactory.getIpssMsgHub();
 		
@@ -827,7 +829,8 @@ public class IpssPyGateway {
 				
 		PSSEAdapter adapter = new PSSEAdapter(version);
 		
-		System.out.println("case files:"+Arrays.toString(caseFiles));
+		IpssLogger.getLogger().info("Case files:"+Arrays.toString(caseFiles));
+		
 		adapter.parseInputFile(NetType.DStabNet, caseFiles);
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
@@ -1700,7 +1703,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 0.93, built on 5/1/2020");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 1.0.0(aphla), built on 8/2/2020");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();
