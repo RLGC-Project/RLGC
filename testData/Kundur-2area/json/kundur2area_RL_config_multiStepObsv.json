@@ -30,7 +30,7 @@
     
     "faultStartTimeCandidates": [1.0],
     
-    "faultDurationCandidates": [0.581, 0.582, 0.582, 0.582, 0.585]
+    "faultDurationCandidates": [0.581, 0.582, 0.583, 0.584, 0.585]
     
 	
 }
