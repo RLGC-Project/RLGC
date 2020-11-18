@@ -3,11 +3,11 @@
 	"dstabOutputFileName": "",
 	"dynMethod": "MODIFIED_EULER",
 	"totalSimuTimeSec": 10.0,
-	"simuTimeStepSec": 0.002,
+	"simuTimeStepSec": 0.005,
 	"eventStartTimeSec": 1.0,
 	"eventDurationSec": 0.08,
 	"referenceGeneratorId": "Bus10030-mach1",
-	"monitoringBusAry": ["Bus1","Bus2","Bus3","Bus4","Bus5","Bus6","Bus7","Bus8","Bus9","Bus10","Bus20","Bus110","Bus112","Bus114"],
+	"monitoringBusAry": ["Bus1","Bus2","Bus3","Bus4","Bus5","Bus6","Bus7","Bus8","Bus9","Bus10","Bus20","Bus110","Bus112","Bus114","Bus562"],
 	"monitoringGenAry": ["Bus10002-mach1","Bus10030-mach1"],
 	"outputPerNSteps": 20,
 	"acscConfigBean": {

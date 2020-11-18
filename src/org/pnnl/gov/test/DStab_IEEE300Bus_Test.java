@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Timer;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
@@ -35,8 +36,8 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
-import com.interpss.dstab.devent.DynamicEvent;
-import com.interpss.dstab.devent.DynamicEventType;
+import com.interpss.dstab.devent.DynamicSimuEvent;
+import com.interpss.dstab.devent.DynamicSimuEventType;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
@@ -207,7 +208,7 @@ public class DStab_IEEE300Bus_Test {
 		}
 		
 		//@Test
-		public void test_IEEE300_loadshedding_RL_continuous() {
+		public void test_IEEE300_loadshedding_RL_continuous_zone1() {
 			
 		    IpssPyGateway app = new IpssPyGateway();
 		    app.setLoggerLevel(1);
@@ -233,6 +234,7 @@ public class DStab_IEEE300Bus_Test {
 				e.printStackTrace();
 			}
 			
+			//app.getDStabAlgo().getNetwork().setStaticLoadIncludedInYMatrix(false);
 			app.reset(0, 2, 1.0, 0.10);
 			double[][] obs_ary = app.getEnvObservationsDbl2DAry();
 			
@@ -247,6 +249,9 @@ public class DStab_IEEE300Bus_Test {
 			System.out.println(Arrays.toString(obs_ary[0]));
 			
 			System.out.println("Action buses:\n"+Arrays.toString(app.getActionBusIds()));
+			
+			
+			System.out.println("Load power:\n"+Arrays.toString(app.getLoadPWithinActionScope()));
 			
 			
 			// for faults at bus idx 0, fault duration 0.1 s
@@ -290,7 +295,7 @@ public class DStab_IEEE300Bus_Test {
 			
 		}
 		
-		@Test
+		//@Test
 		public void test_IEEE300_loadshedding_RL_continuous_moreActionBuses() {
 			
 		    IpssPyGateway app = new IpssPyGateway();
@@ -301,8 +306,8 @@ public class DStab_IEEE300Bus_Test {
 					"testData/IEEE300/IEEE300_dyn_cmld_zone1.dyr"
 					};
 			
-			String dynSimConfigFile = "testData\\ACTIVSg2000\\json\\Texas2000_dyn_config.json"; // define dynamic simulation and monitoring
-			String rlConfigJsonFile = "testData\\ACTIVSg2000\\json\\Texas2000_RL_loadShedding_zone3.json";
+			String dynSimConfigFile = "testData\\IEEE300\\json\\IEEE300_dyn_config.json"; // define dynamic simulation and monitoring
+			String rlConfigJsonFile = "testData\\IEEE300\\json\\IEEE300_RL_loadShedding_zone1_continuous_LSTM_new_morefaultbuses_moreActionBuses_testing.json";
 			
 			int[] ob_act_space_dim = null;
 			
@@ -397,10 +402,120 @@ public class DStab_IEEE300Bus_Test {
 			
 		}
 		
-		private DynamicEvent create3PhaseFaultEvent(String faultBusId, BaseDStabNetwork net,double startTime, double durationTime){
+		@Test
+		public void test_IEEE300_loadshedding_RL_continuous_3zones() {
+			
+		    IpssPyGateway app = new IpssPyGateway();
+		    app.setLoggerLevel(1);
+		    
+		    
+			String[] caseFiles = new String[]{
+					"testData/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
+					"testData/IEEE300/IEEE300_dyn_cmld_allzones.dyr"
+					};
+			
+			String dynSimConfigFile = "testData\\IEEE300\\json\\IEEE300_dyn_config.json"; // define dynamic simulation and monitoring
+			String rlConfigJsonFile = "testData\\IEEE300\\json\\IEEE300_RL_loadShedding_allzones_continuous_LSTM.json";
+			
+			int[] ob_act_space_dim = null;
+			
+			try {
+				ob_act_space_dim = app.initStudyCase(caseFiles, dynSimConfigFile, rlConfigJsonFile);
+				
+				System.out.println("ob_act_space_dim array = "+Arrays.toString( ob_act_space_dim));
+
+				
+			} catch (IOException e) {
+				
+				e.printStackTrace();
+			}
+			
+			long start = System.currentTimeMillis();
+			
+//			app.getDStabAlgo().getNetwork().setStaticLoadIncludedInYMatrix(false);
+			
+			app.reset(0, 0, 1.0, 0.10);
+			double[][] obs_ary = app.getEnvObservationsDbl2DAry();
+			
+			// zone 1, observations: 108 buses (>60kv)
+			// zone 1, actions: 20 buses
+
+
+			System.out.println("observation length: " + obs_ary[0].length);
+			assertTrue(obs_ary.length == 1);
+			assertTrue(obs_ary[0].length == 216);
+			System.out.println("Observations:\n"+Arrays.toString(app.getEnvObservationNames()));
+			System.out.println(Arrays.toString(obs_ary[0]));
+			
+			System.out.println("Action length: "+app.getActionBusIds().length);
+			
+
+			System.out.println("Action buses:\n"+Arrays.toString(app.getActionBusIds()));
+			assertTrue(app.getActionBusIds().length == 108);
+//			System.out.println("Load ids:\n"+Arrays.toString(app.getLoadIdWithinActionScope()));
+//			
+//			System.out.println("Load power:\n"+Arrays.toString(app.getLoadPWithinActionScope()));
+//			
+			int action_size = app.getActionBusIds().length;
+			
+			// for faults at bus idx 0, fault duration 0.1 s
+//			double[] actions = new double[] {0, 0, -0.0, -0.0, -0.0 , -0.1, -0.1, -0.1, -0.0, -0.1, 
+//					-0.0, -0.0, -0.1, -0.0, -0.0, -0.1,  0., 0., -0.1, -0.1 };
+
+			
+			// for faults at bus idx 1 or 2, fault duration 0.1 s
+			double[] actions = new double[action_size];
+			for (int i =0; i<action_size;i++) {
+				if(app.getActionBusIds()[i].contains("_loadBus"))
+					actions[i] =-0.2;
+				else {
+					actions[i] =0;
+				}
+			}
+			
+			while(app.getDStabAlgo().getSimuTime()<app.getDStabAlgo().getTotalSimuTimeSec()) {
+				
+				if(app.getDStabAlgo().getSimuTime()>1.1 && app.getDStabAlgo().getSimuTime()<1.6){
+					app.nextStepDynSim(0.1, actions, "continuous");
+				} 
+				else
+					app.nextStepDynSim(0.1, new double[action_size], "discrete");
+//				
+				//app.nextStepDynSim(0.1, new double[20], "continuous");
+				//app.nextStepDynSim(0.1, actions, "continuous");
+				
+				app.getReward();
+				
+				if(app.isSimulationDone())
+					break;
+				
+//				if(app.getDStabAlgo().getSimuTime()>10.0)
+//				    break;
+//				
+			}
+			
+			
+			
+			//System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachSpeedTable()));
+//			System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
+			System.out.println(app.getStateMonitor().toCSVString(app.getStateMonitor().getBusVoltTable()));
+//			FileUtil.writeText2File("C:\\Qiuhua\\DeepScienceLDRD\\output\\mach_angle_refbus1.csv",app.getStateMonitor().toCSVString(app.getStateMonitor().getMachAngleTable()));
+		
+			System.out.println("total rewards ="+app.getTotalRewards());
+			
+			long end = System.currentTimeMillis();
+			
+			long timeElapsed = end - start;
+			
+			System.out.println("total time ="+timeElapsed*0.001);
+
+			
+		}
+		
+		private DynamicSimuEvent create3PhaseFaultEvent(String faultBusId, BaseDStabNetwork net,double startTime, double durationTime){
 		       // define an event, set the event id and event type.
-				DynamicEvent event1 = DStabObjectFactory.createDEvent("BusFault3P@"+faultBusId, "Bus Fault 3P@"+faultBusId, 
-						DynamicEventType.BUS_FAULT, net);
+				DynamicSimuEvent event1 = DStabObjectFactory.createDEvent("BusFault3P@"+faultBusId, "Bus Fault 3P@"+faultBusId, 
+						DynamicSimuEventType.BUS_FAULT, net);
 				event1.setStartTimeSec(startTime);
 				event1.setDurationSec(durationTime);
 				

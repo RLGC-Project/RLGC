@@ -408,6 +408,9 @@ class PowerDynSimEnv(gym.Env):
     def get_observation_names(self):
         obs_names = list(self.ipss_app.getEnvObservationNames())
         return obs_names
+    def get_action_bus_ids(self):
+        action_bus_ids = list(self.ipss_app.getActionBusIds())
+        return action_bus_ids
     def get_all_generator_activePower(self):
         gen_power = np.array(list(self.ipss_app.getGenerationPAry()))
         return gen_power

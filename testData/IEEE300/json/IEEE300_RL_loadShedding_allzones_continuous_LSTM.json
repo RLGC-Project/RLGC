@@ -7,7 +7,7 @@
 	
 	"observationScopeType": "Zone",
 			
-	"observationScopeAry": ["1", "2","3"],
+	"observationScopeAry": ["1"],
 	
 	"observationVoltThreshold":60000.0,
 	
@@ -15,9 +15,13 @@
 	
 	"actionTypes": ["LoadShed"],
 	
-	"actionScopeType":"Bus",
+	"actionScopeType":"Zone",
 	
-	"actionScopeAry":["Bus20_loadBus","Bus17_loadBus","Bus5_loadBus","Bus61_loadBus","Bus73_loadBus","Bus59_loadBus","Bus76_loadBus","Bus44_loadBus","Bus14_loadBus","Bus38_loadBus","Bus10_loadBus","Bus526_loadBus","Bus15_loadBus","Bus6_loadBus","Bus71_loadBus","Bus319_loadBus","Bus108_loadBus","Bus1190_loadBus","Bus57_loadBus","Bus9_loadBus","Bus49_loadBus","Bus1_loadBus","Bus41_loadBus","Bus37_loadBus","Bus99_loadBus","Bus11_loadBus","Bus22_loadBus","Bus102_loadBus","Bus21_loadBus","Bus77_loadBus","Bus63_loadBus","Bus27_loadBus","Bus53_loadBus","Bus98_loadBus","Bus90_loadBus","Bus110_loadBus","Bus52_loadBus","Bus94_loadBus","Bus8_loadBus","Bus13_loadBus","Bus47_loadBus","Bus72_loadBus","Bus2_loadBus","Bus70_loadBus","Bus33_loadBus","Bus562_loadBus"],
+	"actionScopeAry":["1","2","3"],
+	
+	"actionVoltThreshold": 0.0,
+	
+	"actionPowerMWThreshold": 51.0,
 	
 	"envStepTimeInSec": 0.1,
 	
@@ -39,7 +43,7 @@
             
     "maxVoltRecoveryTime":5.0,
 	
-    "faultBusCandidates": ["Bus23"],
+    "faultBusCandidates": ["Bus23","Bus120","Bus219"],
 	
     "faultStartTimeCandidates": [1.0],
 	

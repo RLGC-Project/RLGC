@@ -53,6 +53,7 @@ import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.datatype.IFaultResult;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
@@ -927,23 +928,27 @@ public class IpssPyGateway {
 		actionBusIdList.clear();
 		
 		for(DStabBus bus:dsNet.getBusList()) {
-			if(bus.isActive()) {
-				if(isBusWithinScope(bus,scopeType,scopeAry)) {
-					
-					for(String actionType: actionTypes) {
-						if(actionType.equalsIgnoreCase("LoadShed")) {
-							//check if it is a load
-							if(bus.isLoad()||!bus.getContributeLoadList().isEmpty()) {
+			if(bus.getBaseVoltage()>=rlConfigBean.actionVoltThreshold) {
+				if(bus.isActive()) {
+					if(isBusWithinScope(bus,scopeType,scopeAry)) {
+						
+						for(String actionType: actionTypes) {
+							if(actionType.equalsIgnoreCase("LoadShed")) {
+								//check if it is a load
+								if(bus.isLoad()||!bus.getContributeLoadList().isEmpty()) {
+									if((bus.getLoadP()*dsNet.getBaseMva()) >=rlConfigBean.actionPowerMWThreshold) {
+										action_location_num++;
+										actionBusIdList.add(bus.getId());
+									}
+								}
+							}
+							else if(actionType.equalsIgnoreCase("GenShed")) {
+								//TODO
+							}
+							else if(actionType.equalsIgnoreCase("BrakeAction")) {
 								action_location_num++;
 								actionBusIdList.add(bus.getId());
 							}
-						}
-						else if(actionType.equalsIgnoreCase("GenShed")) {
-							//TODO
-						}
-						else if(actionType.equalsIgnoreCase("BrakeAction")) {
-							action_location_num++;
-							actionBusIdList.add(bus.getId());
 						}
 					}
 				}
@@ -1535,10 +1540,15 @@ public class IpssPyGateway {
 		for(BaseDStabBus<DStabGen,DStabLoad> bus: this.dsNet.getBusList()) {
 			if(bus.isActive() && bus.isLoad() && 
 			   isBusWithinScope(bus,rlConfigBean.actionScopeType,rlConfigBean.actionScopeAry)) {
-				 for(AclfLoad load: bus.getContributeLoadList()) {
-					if(load.isActive())
-						loadPList.add(load.getLoad(bus.getVoltageMag()).getReal()); // Load is pu on system mva base
-				 }
+				if(bus.getContributeLoadList().isEmpty()) {
+					loadPList.add(bus.getLoadP());
+				}
+				else { 
+					for(AclfLoad load: bus.getContributeLoadList()) {
+						if(load.isActive())
+							loadPList.add(load.getLoad(bus.getVoltageMag()).getReal()); // Load is pu on system mva base
+					 }
+				}
 			}
 		}
 		
@@ -1703,7 +1713,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 1.0.0(aphla), built on 8/2/2020");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 1.0.0(BETA), built on 9/18/2020");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

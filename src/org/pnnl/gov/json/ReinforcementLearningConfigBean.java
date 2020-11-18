@@ -11,6 +11,9 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
 	public ReinforcementLearningConfigBean() {
 		
 	}
+	//----------Below are added to version 3------------------//
+	public double actionVoltThreshold = 0.0;
+	public double actionPowerMWThreshold = 0.0;
 	
    //----------Below are added to version 2------------------//
 	public int version = 1; //include version info to make the configuration backward compatible 

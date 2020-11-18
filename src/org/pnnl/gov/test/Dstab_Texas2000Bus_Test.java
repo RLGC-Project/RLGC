@@ -62,10 +62,12 @@ public class Dstab_Texas2000Bus_Test {
 		
 		// zone 3 and 4, observations: 176 buses (>60 kV)
 		// zone 3, actions: 69 buses
-
+		
+		long start = System.currentTimeMillis();
+		app.getDStabAlgo().getNetwork().setStaticLoadIncludedInYMatrix(false);
 
 		System.out.println("observation length: " + obs_ary[0].length);
-		System.out.println("Observations:\n"+Arrays.toString(app.getEnvObservationNames()));
+		System.out.println("observations:\n"+Arrays.toString(app.getEnvObservationNames()));
 		assertTrue(obs_ary.length == 1);
 		assertTrue(obs_ary[0].length == (176+69));
 		
@@ -87,7 +89,7 @@ public class Dstab_Texas2000Bus_Test {
 			
 			if(app.getDStabAlgo().getSimuTime()<0.1)
 			     app.nextStepDynSim(0.1, new double[69], "continuous");
-			else if(i<3) {
+			else if(i<15) {
 				app.nextStepDynSim(0.1, actions, "continuous");
 				i++;
 			}
@@ -124,7 +126,12 @@ public class Dstab_Texas2000Bus_Test {
 	
 		System.out.println("total rewards ="+app.getTotalRewards());
 		
-		//texas2000_hr_4375_v30_mod.raw
+		long end = System.currentTimeMillis();
+		
+		long timeElapsed = end - start;
+		
+		System.out.println("total time ="+timeElapsed*0.001);
+		
 	}
 	
 	//@Test

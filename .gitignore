@@ -34,3 +34,11 @@ hs_err_pid*
 /src/py/previous_model/*
 /src/py/storedData/*
 /src/py/trainedModels/*
+
+# project
+.idea
+.vscode
+.pydevproject
+.project
+
+
