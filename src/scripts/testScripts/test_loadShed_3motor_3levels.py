@@ -30,7 +30,7 @@ import os, time
 
 java_port = 25335
 
-jar_file = '/lib/RLGCJavaServer1.0.0_alpha.jar'
+jar_file = '/lib/RLGCJavaServer1.0.0_rc.jar'
 
 repo_path =  os.path.abspath('.')
 
@@ -69,7 +69,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import sys
 sys.path.insert(0, './src/environments')
 
-from PowerDynSimEnvDef_v5 import PowerDynSimEnv
+from PowerDynSimEnvDef_v7 import PowerDynSimEnv
 env = PowerDynSimEnv(case_files_array,dyn_config_file,rl_config_file,jar_path,java_port)
 
 

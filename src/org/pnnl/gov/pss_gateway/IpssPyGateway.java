@@ -65,6 +65,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
+import java.util.Collections;
 
 import py4j.GatewayServer;
 
@@ -241,8 +242,9 @@ public class IpssPyGateway {
 				}
 			}
 			
-			System.out.println("\nImported power flow base case files:");
-			System.out.println(Arrays.toString(baseCaseFiles.toArray())+"\n");
+			Collections.sort(baseCaseFiles); //sort in ascending order;
+
+			IpssLogger.getLogger().info("Imported power flow base case files:\n"+Arrays.toString(baseCaseFiles.toArray())+"\n");
 			
 			isFirstInit = false;
 		}
@@ -774,8 +776,8 @@ public class IpssPyGateway {
     		caseInputFiles[0] = baseCaseFiles.get(caseIdx);
     	}
     	else {
-    		IpssLogger.getLogger().severe("Error in the caseIdx in reset() function inpute, caseIdx < number of cases. caseIdx ="+caseIdx+", # of total cases ="+baseCaseFiles.size()+". Will use the first base case.");
-    		caseInputFiles[0] = baseCaseFiles.get(0);
+    		throw new Error("Error in the caseIdx in reset() function inpute, caseIdx must be less than number of cases. However, caseIdx ="+caseIdx+", # of total cases ="+baseCaseFiles.size());
+    		
     	}
     	
 
@@ -791,13 +793,13 @@ public class IpssPyGateway {
     	    this.faultBusId = this.rlConfigBean.faultBusCandidates[faultBusIdx];
     	    if (this.dsNet.getBus(this.faultBusId)==null) {
     	    	this.faultBusId= null;
-    	    	IpssLogger.getLogger().severe("Error in the faultBusId in faultBusCandidates list in RL json configure file, index="+faultBusIdx);
+    	    	throw new Error(("Error in the faultBusId in faultBusCandidates list in RL json configure file, index="+faultBusIdx));
         		
     	    }
     	}
     	else {
-    		IpssLogger.getLogger().severe("The faultBusIdx is outside the faultBusCandidates list defined in RL json configure file!");
-    		this.faultBusId= null;
+    		throw new Error(("The faultBusIdx is outside the faultBusCandidates list defined in RL json configure file!"));
+    		
     	}
     	
     	if (this.faultBusId!= null && faultStartTime>= 0.0 && faultDuration > 0.0){
@@ -808,7 +810,7 @@ public class IpssPyGateway {
         	this.faultDuration = 0.0;
     	}
     	
-    	System.out.println(String.format("Case id: %d, Fault bus id: %s, fault start time: %f, fault duration: %f", caseIdx, faultBusId,faultStartTime,faultDuration));
+    	IpssLogger.getLogger().info(String.format("Case id: %d, Fault bus id: %s, fault start time: %f, fault duration: %f", caseIdx, faultBusId,faultStartTime,faultDuration));
     	
     	return initDimAry;
     	
@@ -1664,9 +1666,13 @@ public class IpssPyGateway {
    }
 
 	public void setLoggerLevel(int level) {
-		if(level>=2) {
+		if(level>2) {
 			IpssLogger.getLogger().setLevel(Level.FINE);
 			ODMLogger.getLogger().setLevel(Level.FINE);
+		}
+		if(level==2) {
+			IpssLogger.getLogger().setLevel(Level.INFO);
+			ODMLogger.getLogger().setLevel(Level.INFO);
 		}
 		else if(level==1) {
 			IpssLogger.getLogger().setLevel(Level.WARNING);
@@ -1713,7 +1719,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 1.0.0(BETA), built on 9/18/2020");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 1.0.0_rc, built on 12/14/2020");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

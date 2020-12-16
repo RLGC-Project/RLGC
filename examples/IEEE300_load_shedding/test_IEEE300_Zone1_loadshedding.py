@@ -6,7 +6,7 @@ import os, time
 
 java_port = 25338
 
-jar_file = '/lib/RLGCJavaServer1.0.0_alpha.jar'
+jar_file = '/lib/RLGCJavaServer1.0.0_rc.jar'
 
 
 

@@ -82,7 +82,7 @@ public class DStab_IEEE300Bus_Test {
 			System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-			dstabAlgo.setSimuStepSec(0.002);
+			dstabAlgo.setSimuStepSec(0.005);
 			dstabAlgo.setTotalSimuTimeSec(5.0);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus10030-mach1"));
 			
@@ -94,12 +94,12 @@ public class DStab_IEEE300Bus_Test {
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(25);
+			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
-			IpssLogger.getLogger().setLevel(Level.INFO);
+			IpssLogger.getLogger().setLevel(Level.WARNING);
 			
-			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus20",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,0.0d,0.08),"3phaseFault@Bus20");
+			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus20",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.08),"3phaseFault@Bus20");
 			
 
 			if (dstabAlgo.initialization()) {
@@ -120,14 +120,14 @@ public class DStab_IEEE300Bus_Test {
 			
 		}
 		
-		//@Test
+		@Test
 		public void test_IEEE300_Dstab_compositeLoadModel() throws InterpssException{
 			IpssCorePlugin.init();
 			IpssLogger.getLogger().setLevel(Level.WARNING);
 			PSSEAdapter adapter = new PSSEAdapter(PsseVersion.PSSE_30);
 			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-					"testData/IEEE300/IEEE300Bus_modified_noHVDC.raw",
-					"testData/IEEE300/IEEE300_dyn_v2_cmld.dyr"
+					"testData/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
+					"testData/IEEE300/IEEE300_dyn_cmld_zone1.dyr"
 			}));
 			DStabModelParser parser =(DStabModelParser) adapter.getModel();
 			
@@ -157,8 +157,8 @@ public class DStab_IEEE300Bus_Test {
 			System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-			dstabAlgo.setSimuStepSec(0.002);
-			dstabAlgo.setTotalSimuTimeSec(5.0);
+			dstabAlgo.setSimuStepSec(0.005);
+			dstabAlgo.setTotalSimuTimeSec(20.0);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus10030-mach1"));
 			
 
@@ -402,7 +402,7 @@ public class DStab_IEEE300Bus_Test {
 			
 		}
 		
-		@Test
+		//@Test
 		public void test_IEEE300_loadshedding_RL_continuous_3zones() {
 			
 		    IpssPyGateway app = new IpssPyGateway();

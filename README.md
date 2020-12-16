@@ -22,7 +22,7 @@ In this project, we explore to use deep reinforcement learning methods for contr
      
      ```
      cd RLGC
-     conda env create -f environment. yml
+     conda env create -f environment.yml
      ``` 
      
      or you can create your own environment. The main dependent modules/libs include gym, tensorflow, py4j, numpy, matplotlib, stable-baselines,jupyter-notebooks
@@ -62,14 +62,11 @@ grid environment definition version 5 (PowerDynSimEnvDef_v5.py)
  The server will be started automatically when the grid environment
  ``PowerDynSimEnv`` is created.
 - To launch the training, you need first activate the virtual 
-environment. Then run the following scripts. 
-```trainKundur2areaGenBrakingAgent.py``` is used for training 
-the generator braking agent for the Kundur 2-area system and ```trainIEEE39LoadSheddingAgent_*.py``` is used for training an agent for regional load shedding in IEEE 39-bus system
-
+environment. Then run the training scripts under the <examples> folder
 
 ```
 source activate <your-env-name> 
-cd RLGC/src/py  
+cd RLGC/examples/IEEE39_load_shedding/  
 python trainIEEE39LoadSheddingAgent_discrete_action.py 
 ```
 
