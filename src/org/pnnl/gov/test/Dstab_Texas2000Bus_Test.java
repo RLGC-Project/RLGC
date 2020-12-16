@@ -89,7 +89,7 @@ public class Dstab_Texas2000Bus_Test {
 			
 			if(app.getDStabAlgo().getSimuTime()<0.1)
 			     app.nextStepDynSim(0.1, new double[69], "continuous");
-			else if(i<15) {
+			else if(i<4) {
 				app.nextStepDynSim(0.1, actions, "continuous");
 				i++;
 			}

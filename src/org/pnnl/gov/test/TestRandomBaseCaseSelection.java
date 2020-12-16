@@ -15,8 +15,9 @@ public class TestRandomBaseCaseSelection {
 	public void test_with_IEEE39_RL() {
 		
 		
-		IpssLogger.getLogger().setLevel(Level.ALL);
+		IpssLogger.getLogger().setLevel(Level.FINE);
 	    IpssPyGateway app = new IpssPyGateway();
+	    app.setLoggerLevel(0);
 		
 		String[] caseFiles = new String[]{
 				"testData\\IEEE39\\IEEE39bus_multiloads_xfmr4_smallX_v30.raw",
@@ -42,7 +43,7 @@ public class TestRandomBaseCaseSelection {
 		}
 		
 		 //reset to different case Idx
-			app.reset(7, 3, 0.05, 0.08);
+			app.reset(5, 0, 0.05, 0.08);
 			
 			while(!app.isSimulationDone()) {
 				

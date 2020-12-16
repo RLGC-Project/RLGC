@@ -22,6 +22,12 @@
 	
     "unstableReward": -1000,
     
-    "actionPenalty": 2.0
+    "actionPenalty": 2.0,
+    
+    "faultBusCandidates": ["Bus6", "Bus7"],
+	
+    "faultStartTimeCandidates": [0.05],
+	
+    "faultDurationCandidates": [0.0, 0.05, 0.08]
 	
 }
