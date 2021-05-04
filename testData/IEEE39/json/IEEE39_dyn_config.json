@@ -8,7 +8,7 @@
 	"eventDurationSec": 0.08,
 	"referenceGeneratorId": "Bus30-mach1",
 	"monitoringBusAry": ["Bus504","Bus507","Bus508","Bus4","Bus7","Bus8"],
-	"monitoringGenAry": ["Bus30-mach1","Bus31-mach1","Bus32-mach1","Bus33-mach1","Bus34-mach1"],
+	"monitoringGenAry": ["Bus30-mach1","Bus31-mach1","Bus32-mach1","Bus33-mach1","Bus34-mach1","Bus35-mach1","Bus36-mach1","Bus37-mach1","Bus38-mach1","Bus39-mach1"],
 	"outputPerNSteps": 10,
 	"acscConfigBean": {
 		"seqFileName": "",

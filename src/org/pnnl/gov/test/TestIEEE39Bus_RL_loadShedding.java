@@ -107,7 +107,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 		
 		while(app.getDStabAlgo().getSimuTime()<app.getDStabAlgo().getTotalSimuTimeSec()) {
 			
-			if(app.getDStabAlgo().getSimuTime()>0.25 && app.getDStabAlgo().getSimuTime()<0.75){
+			if(app.getDStabAlgo().getSimuTime()>0.25 && app.getDStabAlgo().getSimuTime()<0.25){
 			    app.nextStepDynSim(0.1, new double[]{2, 2, 2}, "discrete"); // apply load shedding action to bus 504
 			} 
 			else

@@ -11,9 +11,12 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
 	public ReinforcementLearningConfigBean() {
 		
 	}
-	//----------Below are added to version 3------------------//
+   //----------Below are added to version 3------------------//
 	public double actionVoltThreshold = 0.0;
 	public double actionPowerMWThreshold = 0.0;
+	public double earlyTerminationThreshold = 0.0; //could be used to determine when to stop the simulation due to stability issues.
+	public double stableThresholdCriterion = 0.0; //unit:  degree for angle,  pu for voltage
+	public double preThresholdActionPenalty = 0.0; // If action is applied prior to meeting the <stableThresholdCriterion> defined above, the action will not be accepted but a penalty is applied.
 	
    //----------Below are added to version 2------------------//
 	public int version = 1; //include version info to make the configuration backward compatible 
@@ -29,7 +32,7 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
 	public String studyCaseFolder = "";
 	
 	// define observation stateTypes, such as voltage, frequency, genSpeed, loadP, loadQ
-	public String[] observationStateTypes = {} ; //{"voltage","frequency","loadP","loadQ","genSpeed","genAng","GenP", "GenQ"}; 
+	public String[] observationStateTypes = {} ; //{"voltage","frequency","loadP","loadQ","genSpeed","genAng","genP", "genQ"}; 
 	
 	public String observationScopeType ="";  //{Bus, Zone, Area,System}
 			
@@ -39,10 +42,9 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
 	
 	// define action space. what kind of actions to be applied, where they will be applied
 	
-	//TODO : load shedding, gen shedding
-	public String[] actionTypes = {"LoadShed", "BrakeAction"}; 
+	public String[] actionTypes = {}; //"LoadShed", "BrakeAction", "GeneratorTripping"
 	
-	public String actionScopeType ="";
+	public String actionScopeType =""; //{Bus, Zone, Area,System}
 	
 	public String[] actionScopeAry= {};
 	

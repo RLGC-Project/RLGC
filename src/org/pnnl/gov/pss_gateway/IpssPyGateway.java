@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
@@ -40,6 +41,7 @@ import org.pnnl.gov.json.ReinforcementLearningConfigBean;
 import org.pnnl.gov.rl.action.Action;
 import org.pnnl.gov.rl.action.ActionProcessor;
 import org.pnnl.gov.rl.action.GenBrakeActionProcessor;
+import org.pnnl.gov.rl.action.GeneratorTrippingActionProcessor;
 import org.pnnl.gov.rl.action.LoadChangeActionProcessor;
 
 import com.hazelcast.internal.serialization.impl.ConstantSerializers.TheByteArraySerializer;
@@ -63,6 +65,7 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.mach.Machine;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import java.util.Collections;
@@ -80,7 +83,7 @@ public class IpssPyGateway {
 	
 	// action
 	Hashtable<String,Action> actionHashtable = null;
-	String[] actionBusIds = null;
+	String[] actionTargetIds = null;
 	boolean isActionApplied = false;
 	boolean isPreFaultActionApplied = false;
 	ActionProcessor actionProc = null;
@@ -139,14 +142,18 @@ public class IpssPyGateway {
 	
 	boolean isFirstInit = true;
 	
+	boolean isPreStableThresholdActionApplied = false;
+	
 	String absolutePath2DataFolder = null;
 	
 	double[][] all_observ_states = null;
 	
 	List<String> baseCaseFiles = null;
 	List<Double> all_observ_states_list = null;
-	List<String> actionBusIdList = new ArrayList<>();
+	List<String> actionTargetObjectIdList = new ArrayList<>();
 	
+	double initMaxGenAngleDiff = 0.0;
+	double maxGenAngleDiff = 0.0;
 	
 	
 	public IpssPyGateway() {
@@ -451,7 +458,7 @@ public class IpssPyGateway {
     }
     
     public String[] getActionBusIds() {
-    	return this.actionBusIds;
+    	return this.actionTargetIds;
     }
     
     
@@ -460,7 +467,7 @@ public class IpssPyGateway {
     
 	
 	public double getReward() {
-		//TODO could move to configuration
+	
 		this.stepReward = 0;
 		double u = isActionApplied?1:0;
 		
@@ -548,7 +555,7 @@ public class IpssPyGateway {
 			
 			// process the action part
 			int i = 0;
-			for(String loadBusId:this.actionBusIds){
+			for(String loadBusId:this.actionTargetIds){
 				double initTotalLoadPU = this.dsNet.getBus(loadBusId).getInitLoad().getReal();
 				
 				// this is the actual fraction of load shedding after the actionProcessor processes it, not the action input from the agent.
@@ -600,6 +607,79 @@ public class IpssPyGateway {
 					this.stepReward = this.rlConfigBean.unstableReward;
 					this.isSimulationDone =true;
 			}
+		}
+		else if(this.rlConfigBean.environmentName.contains("Generator_Tripping")){
+			/**
+			 * delta_theta_0 = PI-(theta_{max,0} - theta_{min,0}), use this to off-set the prefault values, similar to data preprocessing
+			 * 
+			 * r(t) = C_1*sum(PI-(theta_{max,t} - theta_{min,t}) - delta_theta_0) - C_2*Sum(GenP_tripping_i)
+			 * 
+			 * Another way of caculating r(t) is:
+			 * 
+			 * r(t) = C_1*sum(PI-(theta_{max,t} - theta_{COI,t}) - delta_theta_0) - C_2*Sum(GenP_tripping_i)
+			 *      
+			 * Two options for when to start accumulate the reward: 
+			 * 
+			 * 1) consider to calculate the angle differences only when the  delta_theta of two two extreme generators is larger than 150 degrees?
+			 *    we could include a observationThreshold for reward calculation
+			 *    
+			 * 2) no threshold for reward calculation, i.e., start calculation from t=0
+			 */
+			double totalTrippedGenPowerPU = 0; // caclulated based on the pre-fault generation output
+			
+			if(this.dstabAlgo.getSimuTime()> (this.faultStartTime+this.faultDuration)){
+							
+							
+				int i = 0;
+				
+				for(String genId:this.actionProc.getActionScopeByGenerator()){
+					
+					if(this.actualactionValuesAry[i]>0.5) { // should be 1.0, but use 0.5 to avoid precision issue
+						totalTrippedGenPowerPU += this.dsNet.getMachine(genId).getParentGen().getGen().getReal();
+					}
+					i++;
+				}
+				   
+				
+				   double genAngMax = Collections.max(this.obsrv_genAng.values());
+				   //double genAngMin = Collections.min(this.obsrv_genAng.values());
+				   
+				   /*
+				    The values in obsrv_genAng are absolute angles, thus they keep increasing during simulation.
+				    
+				    The angle of tripped generator(s) is always  zero, this could cause issue for 
+				    determining the minimum angle, and thus the maxmimum angle difference. Therefore, they need to be filtered out first.
+				    */
+				   
+				   double genAngMin = this.obsrv_genAng.values().stream().filter(e ->e.doubleValue()!=0.0).min(Double::compare).get();
+	
+				   this.maxGenAngleDiff = genAngMax-genAngMin;
+				   
+				   // reward the agent for sustaining stabiltiy for a longer time
+				   this.stepReward = this.maxGenAngleDiff; 
+				   
+				   
+				   this.stepReward = this.stepReward - this.rlConfigBean.actionPenalty*totalTrippedGenPowerPU;
+				   
+				   if(this.isPreStableThresholdActionApplied) {
+					   this.stepReward = this.stepReward - this.rlConfigBean.preThresholdActionPenalty;
+				   }
+				  
+				   
+				   if(this.rlConfigBean.earlyTerminationThreshold<180)
+					     this.rlConfigBean.earlyTerminationThreshold = 180;
+				   if((genAngMax-genAngMin)>this.rlConfigBean.earlyTerminationThreshold/180*Math.PI) {
+					    this.stepReward = this.rlConfigBean.unstableReward;
+						this.isSimulationDone =true;
+				   }
+				   
+				 
+			}
+			else if((this.dstabAlgo.getSimuTime()<=this.faultStartTime) && this.isPreFaultActionApplied){
+				 this.stepReward = - this.rlConfigBean.preFaultActionPenalty;
+			}
+			
+			
 		}// end of environment name check!
 		else{
 			throw new Error("The reward function for the environment has not been implemented yet: "+ this.rlConfigBean.environmentName);
@@ -607,7 +687,7 @@ public class IpssPyGateway {
 		
 		this.totalRewards += this.stepReward;
 		
-	        return this.stepReward;
+	    return this.stepReward;
 	}
 	
 
@@ -639,7 +719,7 @@ public class IpssPyGateway {
 				return isSimulationDone = true;
 			}
 		}
-		else if(this.rlConfigBean.environmentName.contains("IEEE39_FIDVR_LoadShedding")){
+		else if(this.rlConfigBean.environmentName.contains("FIDVR_LoadShedding")){
 		
 			double maxRecoveryTime = this.rlConfigBean.maxVoltRecoveryTime;
 			double minRecoveryVoltPU = 0.95;
@@ -687,6 +767,7 @@ public class IpssPyGateway {
 		//reset the variable
 		this.isActionApplied = false;
 		this.isPreFaultActionApplied = false;
+		this.isPreStableThresholdActionApplied = false;
 		
 		// NOTE: internally it may run multiple steps for one environment action step.
 		int internalSteps = (int) Math.round(stepTimeInSec/dstabAlgo.getSimuStepSec());
@@ -705,6 +786,43 @@ public class IpssPyGateway {
 					}
 				}
 			}
+			else {
+				
+				if(this.actionProc instanceof GeneratorTrippingActionProcessor) {
+					
+					   double genAngMax = Collections.max(this.obsrv_genAng.values());
+					   //double genAngMin = Collections.min(this.obsrv_genAng.values());
+					   
+					   /*
+					    The values in obsrv_genAng are absolute angles, thus they keep increasing during simulation.
+					    
+					    The angle of tripped generator(s) is always  zero, this could cause issue for 
+					    determining the minimum angle, and thus the maxmimum angle difference. Therefore, they need to be filtered out first.
+					    */
+					   
+					   double genAngMin = this.obsrv_genAng.values().stream().filter(e ->e.doubleValue()!=0.0).min(Double::compare).get();
+		
+					   this.maxGenAngleDiff = genAngMax-genAngMin;
+					   
+					   if(this.rlConfigBean.stableThresholdCriterion>0) {
+						   if(this.rlConfigBean.stableThresholdCriterion > this.maxGenAngleDiff*180.0/Math.PI) {
+							   for(int i = 0; i <this.agentActionValuesAry.length;i++){
+									if( Math.abs(this.agentActionValuesAry[i]) > 0.0){ // non-zero values will be detected
+										this.isPreStableThresholdActionApplied = true;
+										
+										this.agentActionValuesAry[i] = 0.0; // force it to zero; invalid actions will not be applied
+										
+										IpssLogger.getLogger().info("Pre-stableThresholdAction: index, value = "+i+", "+actionValueAry[i]);
+									}
+								}
+							  
+						   }
+					   }
+				}
+				
+				
+				
+			}
 		   // 
 		    IpssLogger.getLogger().info("Apply actions at time ="+this.dstabAlgo.getSimuTime());
 		    applyAction(this.agentActionValuesAry, actionType, stepTimeInSec);
@@ -712,6 +830,8 @@ public class IpssPyGateway {
 		
 		if (this.isPreFaultActionApplied)
 			IpssLogger.getLogger().warning("To help training, any non-zero action being applied prior to the fault(event) time is regarded as invalid, thus will be forced to zero and not applied to simulator!\n"); 
+		
+		
 		
 		for(int i = 0; i<internalSteps; i++) {
 			if(dstabAlgo.getSimuTime()<dstabAlgo.getTotalSimuTimeSec()) {
@@ -767,6 +887,8 @@ public class IpssPyGateway {
     	
     	this.faultStartTime = faultStartTime;
     	this.faultDuration = faultDuration;
+    	
+    	//this.initMaxGenAngleDiff = 0.0;
     	
     	
         //update caseInputFiles using the base case associated with the input case index 
@@ -919,6 +1041,9 @@ public class IpssPyGateway {
 		  else if(actionTypes[0].equalsIgnoreCase("LoadShed")){
 			  this.actionProc = new LoadChangeActionProcessor(this.dsNet);
 		  }
+		  else if(actionTypes[0].equalsIgnoreCase("GeneratorTripping")){
+			  this.actionProc = new GeneratorTrippingActionProcessor(this.dsNet,this.dstabAlgo);
+		  }
 		  else{
 			  throw new Error("The input action type is not supportted yet: "+actionTypes[0]);
 		  }
@@ -927,7 +1052,7 @@ public class IpssPyGateway {
 			throw new Error("The ctionTypes in the RL Json configuration file is empty");
 		}
 		
-		actionBusIdList.clear();
+		actionTargetObjectIdList.clear();
 		
 		for(DStabBus bus:dsNet.getBusList()) {
 			if(bus.getBaseVoltage()>=rlConfigBean.actionVoltThreshold) {
@@ -940,16 +1065,25 @@ public class IpssPyGateway {
 								if(bus.isLoad()||!bus.getContributeLoadList().isEmpty()) {
 									if((bus.getLoadP()*dsNet.getBaseMva()) >=rlConfigBean.actionPowerMWThreshold) {
 										action_location_num++;
-										actionBusIdList.add(bus.getId());
+										actionTargetObjectIdList.add(bus.getId());
 									}
 								}
 							}
-							else if(actionType.equalsIgnoreCase("GenShed")) {
-								//TODO
+							else if(actionType.equalsIgnoreCase("GeneratorTripping")) {
+
+								if(bus.isGen()&&!bus.getContributeGenList().isEmpty()) {
+									for(DStabGen gen: bus.getContributeGenList())
+									if(gen.getGen().getReal()*this.dsNet.getBaseMva()>=rlConfigBean.actionPowerMWThreshold) {
+										action_location_num++;
+										if(gen.getDynamicGenDevice()!=null) {
+											actionTargetObjectIdList.add(gen.getDynamicGenDevice().getId());
+										}
+									}
+								}
 							}
 							else if(actionType.equalsIgnoreCase("BrakeAction")) {
 								action_location_num++;
-								actionBusIdList.add(bus.getId());
+								actionTargetObjectIdList.add(bus.getId());
 							}
 						}
 					}
@@ -958,10 +1092,15 @@ public class IpssPyGateway {
 		}
 		
 		// convert the list to array
-		actionBusIds = actionBusIdList.toArray(new String[actionBusIdList.size()]);
+		actionTargetIds = actionTargetObjectIdList.toArray(new String[actionTargetObjectIdList.size()]);
 		
 		// set the action scope and action levels
-		this.actionProc.setActionScopeByBus(actionBusIds);
+		if(actionTypes[0].equalsIgnoreCase("BrakeAction") ||actionTypes[0].equalsIgnoreCase("LoadShed")) {
+			this.actionProc.setActionScopeByBus(actionTargetIds);
+		}
+		else if (actionTypes[0].equalsIgnoreCase("GeneratorTripping")){
+			this.actionProc.setActionScopeByGenerator(actionTargetIds);
+		}
 		this.actionProc.setActionLevels(rlConfigBean.actionLevels);
 		
 		//action_space_dim is defined by action_location_num and action_level_num
@@ -1014,7 +1153,9 @@ public class IpssPyGateway {
 	private boolean applyAction(double[] actionValueAry, String actionValueType, double duration) {
 		
 		
-		if(actionValueAry!=null) {	
+		if(actionValueAry!=null) {
+			
+			
 			this.actualactionValuesAry = actionProc.applyAction(actionValueAry, actionValueType, duration);
 			
 			if(this.actualactionValuesAry!=null)
@@ -1022,7 +1163,7 @@ public class IpssPyGateway {
 		}
 		
 		
-		return isActionApplied ;
+		return isActionApplied;
 	}
 	
 	private Action mapGymActionToIpssAction(String gymAction, String actionType) {
@@ -1180,14 +1321,14 @@ public class IpssPyGateway {
 						else if(stateType.equalsIgnoreCase("genSpeed")) {
 							if(bus.isGen() || bus.getContributeGenList().size()>0) {
 							    for(AclfGen gen: bus.getContributeGenList()) {
-							       if(gen.isActive()) {
+							       //if(gen.isActive()) {
 							    	   DStabGen dsGen = (DStabGen) gen;
 							    	   if(dsGen.getMach()!=null) {
 								         
-								           obsrv_genSpd.put("genSpeed_"+dsGen.getMach().getId(),dsGen.getMach().getSpeed());
+								           obsrv_genSpd.put("genSpeed_"+dsGen.getMach().getId(),gen.isActive()?dsGen.getMach().getSpeed():0.0);
 								           // dsGen.getMach().getGovernor().get
 							    	   }
-							       }
+							       //}
 							    }
 							   
 							}
@@ -1195,13 +1336,13 @@ public class IpssPyGateway {
 						else if(stateType.equalsIgnoreCase("genAngle")) {
 							if(bus.isGen() || bus.getContributeGenList().size()>0) {
 							    for(AclfGen gen: bus.getContributeGenList()) {
-							       if(gen.isActive()) {
+							      // if(gen.isActive()) {
 							    	   DStabGen dsGen = (DStabGen) gen;
 							    	   if(dsGen.getMach()!=null) {
-								         
-								           obsrv_genAng.put("genAngle_"+dsGen.getMach().getId(),dsGen.getMach().getAngle());
+								           
+								           obsrv_genAng.put("genAngle_"+dsGen.getMach().getId(),gen.isActive()?dsGen.getMach().getAngle():0.0);
 							    	   }
-							       }
+							      //}
 							    }
 							   
 							}
@@ -1210,13 +1351,13 @@ public class IpssPyGateway {
 						else if(stateType.equalsIgnoreCase("genP")) {
 							if(bus.isGen() || bus.getContributeGenList().size()>0) {
 							    for(AclfGen gen: bus.getContributeGenList()) {
-							       if(gen.isActive()) {
+							       //if(gen.isActive()) {
 							    	   DStabGen dsGen = (DStabGen) gen;
 							    	   if(dsGen.getMach()!=null) {
 								         
-								           obsrv_genP.put("genP_"+dsGen.getMach().getId(),dsGen.getMach().getPe());
+								           obsrv_genP.put("genP_"+dsGen.getMach().getId(),gen.isActive()?dsGen.getMach().getPe():0.0);
 							    	   }
-							       }
+							       //}
 							    }
 							   
 							}
@@ -1225,13 +1366,13 @@ public class IpssPyGateway {
 						else if(stateType.equalsIgnoreCase("genQ")) {
 							if(bus.isGen() || bus.getContributeGenList().size()>0) {
 							    for(AclfGen gen: bus.getContributeGenList()) {
-							       if(gen.isActive()) {
+							       //if(gen.isActive()) {
 							    	   DStabGen dsGen = (DStabGen) gen;
 							    	   if(dsGen.getMach()!=null) {
 								         
-								           obsrv_genQ.put("genQ_"+dsGen.getMach().getId(),dsGen.getMach().getQGen());
+								           obsrv_genQ.put("genQ_"+dsGen.getMach().getId(),gen.isActive()?dsGen.getMach().getQGen():0.0);
 							    	   }
-							       }
+							       //}
 							    }
 							   
 							}
@@ -1375,16 +1516,16 @@ public class IpssPyGateway {
 	
 	public double[][] getActionValueRanges(){
 		// check the consistency of dimension of actionValueRanges array and the action space
-		if(this.rlConfigBean.actionValueRanges.length!=this.actionBusIdList.size()) {
+		if(this.rlConfigBean.actionValueRanges.length!=this.actionTargetObjectIdList.size()) {
 			double[][] temp = this.rlConfigBean.actionValueRanges;
 			
-			if(temp.length>this.actionBusIdList.size()) {
-				this.rlConfigBean.actionValueRanges = Arrays.copyOfRange(temp, 0, this.actionBusIdList.size());
+			if(temp.length>this.actionTargetObjectIdList.size()) {
+				this.rlConfigBean.actionValueRanges = Arrays.copyOfRange(temp, 0, this.actionTargetObjectIdList.size());
 			}
 			else {// temp.length<this.actionBusIdList.size(), need to extend the array by copy 
-				double[][] temp2 = new double[this.actionBusIdList.size()][temp[0].length];
+				double[][] temp2 = new double[this.actionTargetObjectIdList.size()][temp[0].length];
 				System.arraycopy(temp, 0, temp2, 0, temp.length);
-				Arrays.fill(temp2, temp.length, this.actionBusIdList.size(), temp[temp.length-1]);
+				Arrays.fill(temp2, temp.length, this.actionTargetObjectIdList.size(), temp[temp.length-1]);
 				this.rlConfigBean.actionValueRanges = temp2;
 			}
 		}
@@ -1719,7 +1860,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang @ PNNL. Version 1.0.0_rc, built on 12/14/2020");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang. Version 1.0.0_rc4, built on 03/29/2021");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();

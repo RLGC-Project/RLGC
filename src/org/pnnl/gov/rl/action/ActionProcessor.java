@@ -10,6 +10,14 @@ public interface ActionProcessor {
 	
 	public String[] getActionScopeByBus();
 	
+	public void setActionScopeByGenerator(String[] actionScopeAry);
+	
+	public String[] getActionScopeByGenerator();
+	
+	public void setActionScopeByBranch(String[] actionScopeAry);
+	
+	public String[] getActionScopeByBranch();
+	
 	public void setActionLevels(double[] actionLevels);
 	
 	public double[] getActionLevels();

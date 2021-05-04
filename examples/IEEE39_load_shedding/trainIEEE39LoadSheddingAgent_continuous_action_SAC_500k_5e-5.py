@@ -27,7 +27,7 @@ np.random.seed(19)
 
 # config the RLGC Java Sever
 java_port = 25034
-jar_file = '/lib/RLGCJavaServer1.0.0_alpha.jar'
+jar_file = '/lib/RLGCJavaServer1.0.0_rc.jar'
 
 
 
