@@ -1,0 +1,51 @@
+{
+	"environmentName": "IEEE39_Generator_Tripping",
+	"studyCaseFolder": "testData\\IEEE39",
+	
+	"observationStateTypes": ["genSpeed","genAngle","genP"],
+	
+	"observationScopeType": "System",
+			
+	"observationScopeAry": [],
+	
+	"historyObservationSize": 1,
+	
+	"actionTypes": ["GeneratorTripping"],
+	
+	"actionScopeType":"Bus",
+	
+	"actionScopeAry":["Bus30","Bus31","Bus32"],
+	
+	"envStepTimeInSec": 0.1,
+	
+	"actionLevels":[0, 1],
+	
+    "unstableReward": -10000,
+    
+    "actionPenalty": 100.0,
+    
+    "invalidActionPenalty": 0.0,
+    
+    "preFaultActionPenalty":250,
+    
+    "observationWeight":1.0,
+    
+    "includeActionStatusInObservations": false,
+	
+    "maxVoltRecoveryTime": 15.0,
+    
+    "earlyTerminationThreshold": 360,
+	
+    "faultBusCandidates": ["Bus4"],
+	
+    "faultStartTimeCandidates": [0.2],
+	
+    "faultDurationCandidates": [0.08, 0.14, 0.15],
+    
+    "stableThresholdCriterion": 180.0,
+    
+	"preThresholdActionPenalty": 50
+    
+    
+	
+}

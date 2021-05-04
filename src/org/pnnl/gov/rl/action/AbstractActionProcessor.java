@@ -5,6 +5,9 @@ import com.interpss.dstab.DStabilityNetwork;
 public class AbstractActionProcessor implements ActionProcessor {
 	
 	protected String[] actionScopeBusAry = null;
+	protected String[] actionScopeGeneratorAry = null;
+	protected String[] actionScopeBranchAry = null;
+	
 	private double[] actionLevels= null;
 	protected DStabilityNetwork dstabNet = null;
 	
@@ -23,6 +26,31 @@ public class AbstractActionProcessor implements ActionProcessor {
 		
 		return this.actionScopeBusAry;
 	}
+	
+	@Override
+	public void setActionScopeByGenerator(String[] actionScopeAry) {
+		this.actionScopeGeneratorAry = actionScopeAry;
+
+	}
+
+	@Override
+	public String[] getActionScopeByGenerator() {
+		
+		return this.actionScopeGeneratorAry;
+	}
+	
+	@Override
+	public void setActionScopeByBranch(String[] actionScopeAry) {
+		
+		this.actionScopeBranchAry = actionScopeAry;
+	}
+
+	@Override
+	public String[] getActionScopeByBranch() {
+		
+		return this.actionScopeBranchAry;
+	}
+
 
 	@Override
 	public double[] applyAction(double[] actionValueAry, String actionValueType, double duration) {
@@ -47,4 +75,5 @@ public class AbstractActionProcessor implements ActionProcessor {
 		throw new UnsupportedOperationException();
 	}
 
+	
 }
