@@ -4,7 +4,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Timer;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
@@ -21,12 +20,12 @@ import org.junit.Test;
 import org.pnnl.gov.pss_gateway.IpssPyGateway;
 
 import com.interpss.CoreCommonFactory;
-import com.interpss.CoreObjectFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -43,7 +42,7 @@ import com.interpss.simu.SimuCtxType;
 
 public class DStab_IEEE300Bus_Test {
 		
-		//@Test
+		@Test
 		public void test_IEEE300_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
 			
@@ -174,7 +173,7 @@ public class DStab_IEEE300Bus_Test {
 			
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
-			dstabAlgo.setOutPutPerSteps(25);
+			dstabAlgo.setOutPutPerSteps(20);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
 			IpssLogger.getLogger().setLevel(Level.INFO);
@@ -522,7 +521,7 @@ public class DStab_IEEE300Bus_Test {
 		      // define a bus fault
 				BaseDStabBus faultBus = net.getDStabBus(faultBusId);
 
-				AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net);
+				AcscBusFault fault = CoreObjectFactory.createAcscBusFault("Bus Fault 3P@"+faultBusId, net,false);
 		  		fault.setBus(faultBus);
 				fault.setFaultCode(SimpleFaultCode.GROUND_3P);
 				fault.setZLGFault(NumericConstant.SmallScZ);
