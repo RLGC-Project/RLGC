@@ -1,7 +1,10 @@
 package org.pnnl.gov.pss_gateway;
 
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -11,34 +14,37 @@ import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.plaf.basic.BasicSliderUI.ActionScroller;
+
+import org.apache.commons.math3.analysis.function.Atan;
 import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.ode.FirstOrderConverter;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
 import org.ieee.odm.common.ODMLogger;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.control.gov.GovernorBlockingHelper;
+import org.interpss.fadapter.IpssFileAdapter.FileFormat;
 import org.interpss.mapper.odm.ODMDStabParserMapper;
 import org.interpss.numeric.sparse.ISparseEqnInteger;
 import org.interpss.pssl.plugin.IpssAdapter;
 import org.interpss.pssl.plugin.cmd.json.BaseJSONBean;
 import org.interpss.pssl.plugin.cmd.json.DstabRunConfigBean;
-import org.pnnl.gov.json.ContingencyConfigBean;
 import org.pnnl.gov.json.ReinforcementLearningConfigBean;
 import org.pnnl.gov.rl.action.Action;
 import org.pnnl.gov.rl.action.ActionProcessor;
 import org.pnnl.gov.rl.action.GenBrakeActionProcessor;
 import org.pnnl.gov.rl.action.GeneratorTrippingActionProcessor;
-import org.pnnl.gov.rl.action.LineSwitchActionProcessor;
 import org.pnnl.gov.rl.action.LoadChangeActionProcessor;
 
-
+import com.hazelcast.internal.serialization.impl.ConstantSerializers.TheByteArraySerializer;
 import com.interpss.CoreCommonFactory;
 import com.interpss.DStabObjectFactory;
 import com.interpss.SimuObjectFactory;
@@ -48,12 +54,10 @@ import com.interpss.common.util.IpssLogger;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.core.algo.AclfMethod;
 import com.interpss.core.algo.LoadflowAlgorithm;
-
+import com.interpss.core.datatype.IFaultResult;
 import com.interpss.core.net.Branch;
 import com.interpss.dstab.BaseDStabBus;
-import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabLoad;
@@ -61,7 +65,7 @@ import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
-import com.interpss.dstab.devent.DynamicSimuEventType;
+import com.interpss.dstab.mach.Machine;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import java.util.Collections;
@@ -84,10 +88,9 @@ public class IpssPyGateway {
 	boolean isPreFaultActionApplied = false;
 	ActionProcessor actionProc = null;
 	double[] agentActionValuesAry = null;
-	double[] actualActionValuesAry = null;
+	double[] actualactionValuesAry = null;
 	
 	
-	Hashtable<String,Boolean>  obsrv_gen_status = null;
 	// observation
 	Hashtable<Integer,double[]> observationHistoryRecord = null;
 	
@@ -100,17 +103,12 @@ public class IpssPyGateway {
 	LinkedHashMap<String,Double> obsrv_genQ = null;
 	LinkedHashMap<String,Double> obsrv_loadP = null;
 	LinkedHashMap<String,Double> obsrv_loadQ = null;
-	LinkedHashMap<String,Double> obsrv_genTrippedPower = null;
-	LinkedHashMap<String,Double> obsrv_loadShedPower = null;
-	
 	
 	List<String> obsrv_state_names = null;
 	
 	double[] observationAry = null;
-	
-	double totalLoadShedPowerPU = 0.0;
-	double totalGenTripPowerPU = 0.0;
 
+	
 	//rewards
 	double stepReward = 0.0;
 	double totalRewards = 0.0;
@@ -140,7 +138,7 @@ public class IpssPyGateway {
 	
 	double envStepTime = 0.0;
 	
-	boolean applyFaultDuringInitialization = false;
+	boolean applyFaultDuringInitialization = true;
 	
 	boolean isFirstInit = true;
 	
@@ -153,16 +151,9 @@ public class IpssPyGateway {
 	List<String> baseCaseFiles = null;
 	List<Double> all_observ_states_list = null;
 	List<String> actionTargetObjectIdList = new ArrayList<>();
-	Hashtable<String, List<String>> cutSetTable = new Hashtable();
-	ContingencyConfigBean[] contingencyAry = null;
-	StringBuffer rewardInfoBuffer = new StringBuffer();
 	
 	double initMaxGenAngleDiff = 0.0;
 	double maxGenAngleDiff = 0.0;
-	
-	double accumulatedTotalShed_lastStep = 0;
-	
-	boolean isInitDStabSimu = true;
 	
 	
 	public IpssPyGateway() {
@@ -179,14 +170,6 @@ public class IpssPyGateway {
 	
 	public int[] initStudyCase(String[] caseFiles,  String dynSimConfigFile, String rlConfigFile) throws IOException {
 		
-		// use the current directory folder as the absolute Path to the Data Folder "testData\"
-		return initStudyCase(caseFiles,  dynSimConfigFile, rlConfigFile,absolutePath2DataFolder);
-		
-	}
-	
-    public int[] initStudyCase(String[] caseFiles,  String dynSimConfigFile, String rlConfigFile, boolean initDStabSimuFlag) throws IOException {
-		
-    	isInitDStabSimu = initDStabSimuFlag;
 		// use the current directory folder as the absolute Path to the Data Folder "testData\"
 		return initStudyCase(caseFiles,  dynSimConfigFile, rlConfigFile,absolutePath2DataFolder);
 		
@@ -229,8 +212,6 @@ public class IpssPyGateway {
 				    caseInputFiles = Arrays.copyOfRange(caseInputFiles, 0,2);
 				}
 			}
-			
-			
 			
 		}
 		
@@ -285,8 +266,6 @@ public class IpssPyGateway {
 		
 		boolean initFlag = loadStudyCase(caseInputFiles);
 		
-
-		
 		if(initFlag) {
 			
 			
@@ -295,16 +274,8 @@ public class IpssPyGateway {
 			boolean lf_flag = true;
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 			
-			aclfAlgo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
-			
 			//disable volt/var control
 			aclfAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-			double tol = dynSimConfigBean.acscConfigBean.runAclfConfig.tolerance;
-			if (tol<1.0E-3) tol = 1.0E-3;
-			aclfAlgo.setTolerance(tol);
-			aclfAlgo.setInitBusVoltage(false);
-			aclfAlgo.setLfMethod(AclfMethod.NR);
-			aclfAlgo.setNonDivergent(dynSimConfigBean.acscConfigBean.runAclfConfig.nonDivergent);
 			
 			try {
 				lf_flag = aclfAlgo.loadflow();
@@ -316,28 +287,11 @@ public class IpssPyGateway {
 				throw new Error("Power flow is not converged during initialization");
 			}
 			
-			// process PSS/E dynamic helper files such as *.bsg and *.idv files
-			if(dynSimConfigBean.dynamicHelperFiles.length>0) {
-				for(String helperFile: dynSimConfigBean.dynamicHelperFiles) {
-					if(helperFile.endsWith(".bsg")) {
-						GovernorBlockingHelper gbh = new GovernorBlockingHelper(helperFile);
-						gbh.blockRemoveGov(dsNet);
-					}
-					else {
-						IpssLogger.getLogger().severe("Dynamic helper file is not supportted yet! File name: " + helperFile);
-					}
-				}
-			}
 			
 			
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(dynSimConfigBean.simuTimeStepSec);
 			dstabAlgo.setTotalSimuTimeSec(dynSimConfigBean.totalSimuTimeSec);
-			dstabAlgo.setNetworkSolutionTolerance(dynSimConfigBean.netSolTolerance);
-			dstabAlgo.setNetworkSolutionMaxItrn(dynSimConfigBean.netSolMaxItrn);
-			
-			dsNet.setAllowGenWithoutMach(true);
-			dsNet.setStaticLoadIncludedInYMatrix(false);
 			
 			if(!dynSimConfigBean.referenceGeneratorId.isEmpty())
 				dstabAlgo.setRefMachine(this.dsNet.getMachine(dynSimConfigBean.referenceGeneratorId));
@@ -370,9 +324,9 @@ public class IpssPyGateway {
 			
 			
 			//initialize dyn simulation
-			if(isInitDStabSimu) {
-			     boolean dsInitFlag = dstabAlgo.initialization();
-			}
+			
+			boolean dsInitFlag = dstabAlgo.initialization();
+			
 		
 			
 			// need to run the system without fault for a period of external environment observation time step
@@ -380,8 +334,9 @@ public class IpssPyGateway {
 			
 			envStepTime = rlConfigBean.envStepTimeInSec;
 			
-			//save the contingency definition records, and one of them will be randomly chosen in the reset() function 
-			contingencyAry = rlConfigBean.contingencyList;
+			//TODO for now consider only one action type during one environment action-observation step
+			//nextStepDynSim(envStepTime,null,rlConfigBean.actionTypes[0]);
+			
 			
 		}
 		else{
@@ -391,15 +346,13 @@ public class IpssPyGateway {
 		// need to initialize the action space first, as saveInternalObservations() needs the actionProcessor
 		int[] action_space_dim = initActionSpace();
 		
-		// this operation is only necessary and performed when genTrippedPower is included in the observation states.
-		saveInitGenStatus();
-		
 		// save the internal observations to this.observationHistoryRecord
 		
 		this.internalObsrvRecordNum = 0;
 		saveInternalObservations();
 		
 		
+	
 		//read the rlConfigFile to determine the dimension of the observation and action spaces
 		int[] observation_space_dim = initObsverationSpace();
 		
@@ -519,7 +472,7 @@ public class IpssPyGateway {
 		double u = isActionApplied?1:0;
 		
 		//TODO the rewards are defined  on  a case by case basis
-		if(this.rlConfigBean.environmentName.contains("DynamicBraking_Kundur-2area")) {
+		if(this.rlConfigBean.environmentName.contains("kundur-2area")) {
 			// area-1: "Bus1-mach1","Bus2-mach1",
 			// area-2: "Bus3-mach1","Bus4-mach1"
 			double equiv_angle_area_1 = (this.obsrv_genAng.get("genAngle_Bus1-mach1")+this.obsrv_genAng.get("genAngle_Bus2-mach1"))*0.5;
@@ -606,7 +559,7 @@ public class IpssPyGateway {
 				double initTotalLoadPU = this.dsNet.getBus(loadBusId).getInitLoad().getReal();
 				
 				// this is the actual fraction of load shedding after the actionProcessor processes it, not the action input from the agent.
-				double changeFraction = this.actualActionValuesAry[i];
+				double changeFraction = this.actualactionValuesAry[i];
 				
 				//check invalid actions
 				if (this.agentActionValuesAry!=null) {
@@ -681,7 +634,7 @@ public class IpssPyGateway {
 				
 				for(String genId:this.actionProc.getActionScopeByGenerator()){
 					
-					if(this.actualActionValuesAry[i]>0.5) { // should be 1.0, but use 0.5 to avoid precision issue
+					if(this.actualactionValuesAry[i]>0.5) { // should be 1.0, but use 0.5 to avoid precision issue
 						totalTrippedGenPowerPU += this.dsNet.getMachine(genId).getParentGen().getGen().getReal();
 					}
 					i++;
@@ -727,136 +680,17 @@ public class IpssPyGateway {
 			}
 			
 			
-		}
-		else if(this.rlConfigBean.environmentName.contains("Controlled_Islanding")){
-			
-			/**
-			 R = c1* sum(R(f_i)) - c2*sum(dPg + dPl) + c3*u
-			 where
-				R(f_i) = (f_i – 59.4),  if f_i < 59.4, 
-				           =  0 ,   59.4 <f_i < 60.6
-				           = 60.6-f_i, if f_i >60.6
-				
-				u  = 0 or 1, meaning if controlled islanding action is applied or not; 
-				
-				c3 is selected based on the other two parts
-
-			 *  
-			 */
-			
-			//double validActionStartTime = 30/60; //30 cycles
-			double freqLowThreshold = 59.4;
-			double freqHighThreshold = 61.7;
-			
-			double sumFreqDeviation = 0.0;
-			double baseFreq = this.dsNet.getFrequency();
-			if(baseFreq==0.0) baseFreq = 60.0;
-			
-			for(double busFreq: this.obsrv_freq.values()) {
-				if (busFreq*baseFreq < freqLowThreshold) sumFreqDeviation  +=  busFreq*baseFreq- freqLowThreshold;
-				else if (busFreq*baseFreq > freqHighThreshold) sumFreqDeviation +=  freqHighThreshold - busFreq*baseFreq;
-				else sumFreqDeviation += 0;
-					
-			}
-			
-			this.stepReward = this.rlConfigBean.observationWeight*sumFreqDeviation;
-		
-			this.rewardInfoBuffer.append("sumFreqDeviation, " +sumFreqDeviation+",");
-			
-			//penalize load shedding and generator tripping
-		    
-		   //TODO Now c2 = 100 for converting power from pu to MW; it could be updated to be more flexible 
-			this.stepReward = this.stepReward - (this.totalLoadShedPowerPU*10 + this.totalGenTripPowerPU)*100;
-			
-			this.rewardInfoBuffer.append("totalLoadShedPowerPU," +this.totalLoadShedPowerPU+",");
-			
-			this.rewardInfoBuffer.append("totalGenTripPowerPU," +this.totalGenTripPowerPU+",");
-			
-			//penalize the controlled islanding action
-		    //TODO to consider the number of lines in the cutset
-		    
-		    
-		    if(this.isPreFaultActionApplied){
-		    	this.stepReward = this.stepReward - this.rlConfigBean.invalidActionPenalty;
-		    	
-		    	this.rewardInfoBuffer.append("preFault invalid action penalty," +(-this.rlConfigBean.invalidActionPenalty)+",");
-		    }
-		    else {
-		    	this.rewardInfoBuffer.append("preFault invalid action penalty," +0.0+",");
-		    }
-		
-		    
-			//penalize the controlled islanding action
-		    //TODO to consider the number of lines in the cutset
-		    if(this.isActionApplied) {
-				this.stepReward = this.stepReward - this.rlConfigBean.actionPenalty;
-				this.rewardInfoBuffer.append("action penalty," +(-this.rlConfigBean.actionPenalty)+",");
-				this.isActionApplied = false;
-			}
-		    else {
-		    	this.rewardInfoBuffer.append("Action penalty," +0.0+",");
-		    }
-		    
-		    if ( this.actualActionValuesAry==null && this.agentActionValuesAry!=null && sum(this.agentActionValuesAry)>0.1) {
-		    	this.stepReward = this.stepReward - this.rlConfigBean.invalidActionPenalty;
-		    	this.rewardInfoBuffer.append("invalid action penalty," +(-this.rlConfigBean.invalidActionPenalty)+",");
-		    }
-		    else {
-		    	this.rewardInfoBuffer.append("invalid action penalty," + 0.0+",");
-		    }
-		    
-		    if(this.isSimulationDone() && 
-		    		(this.dstabAlgo.getSimuTime()< (this.dstabAlgo.getTotalSimuTimeSec()-this.dstabAlgo.getSimuStepSec()))){
-		    	this.stepReward = this.stepReward + this.rlConfigBean.unstableReward;
-		    	
-		    	this.rewardInfoBuffer.append("unstable penalty (with early termination)," + this.rlConfigBean.unstableReward+",");
-		    }
-		    else {
-		    	this.rewardInfoBuffer.append("unstable penalty (with early termination)," + 0.0+",");
-		    }
-			
-		}
-		// end of environment name check!
+		}// end of environment name check!
 		else{
 			throw new Error("The reward function for the environment has not been implemented yet: "+ this.rlConfigBean.environmentName);
 		}
 		
 		this.totalRewards += this.stepReward;
 		
-		this.rewardInfoBuffer.append("Total step reward," +this.stepReward+"\n");
-		
 	    return this.stepReward;
 	}
 	
-	public String getStepRewardInfo() {
-		return this.rewardInfoBuffer.toString();
-	}
-	
-	private double sum(double[] array) {
-		return Arrays.stream(array).sum();
-	}
-	
-	
-    private double getTotalLoadShedPowerPU() {
-    	 
-    	// for all the loads, check the accumulated load change factor
-    	double accumulatedTotalShed = this.obsrv_loadShedPower.values().stream().mapToDouble(Double::doubleValue).sum();
-    	
-    	double delta_totalShed = accumulatedTotalShed_lastStep - accumulatedTotalShed; // the total shed is negative
-    	
-    	accumulatedTotalShed_lastStep = accumulatedTotalShed; 
-    	
-    	return  delta_totalShed;
-    }
-    
-    //TODO this should be a transient stability simulation system level basic monitoring function
-    private double getTotalGeneratorTripPowerPU() {
-    	 
-    	// use a list to keep generator status, and check the 
-    	double genTrippedPower =  this.obsrv_genTrippedPower.values().stream().mapToDouble(Double::doubleValue).sum();
-    	
-    	return genTrippedPower;
-    }
+
 	
 	/**
 	 * The simulation is done when one of the criterion is met: 1) reach the total simulation time; 2) goes unstable
@@ -864,12 +698,8 @@ public class IpssPyGateway {
 	 */
 	public boolean isSimulationDone() {
 		
-		if(isSimulationDone) {
+		if(isSimulationDone)
 			   return true;
-		}
-		if(this.dstabAlgo.isSimulationTerminatedEarly()) {
-			return true;
-		}
 		
 		if(this.rlConfigBean.environmentName.contains("kundur-2area")) {
 			// area-1: "Bus1-mach1","Bus2-mach1",
@@ -915,15 +745,6 @@ public class IpssPyGateway {
 				}
 			}
 		}
-		
-		else if (this.rlConfigBean.environmentName.contains("Controlled_Islanding")){
-//			double maxFreq = this.obsrv_freq.values().stream().max(Double::compare).get();
-//			double minFreq = this.obsrv_freq.values().stream().min(Double::compare).get();
-//			
-//			if(maxFreq > 1.1 || minFreq<0.95) {
-//				return isSimulationDone = true;
-//			}
-		}
 			
 		isSimulationDone = dstabAlgo.getSimuTime()>= dstabAlgo.getTotalSimuTimeSec();
 		
@@ -947,11 +768,6 @@ public class IpssPyGateway {
 		this.isActionApplied = false;
 		this.isPreFaultActionApplied = false;
 		this.isPreStableThresholdActionApplied = false;
-		
-		if(!this.isInitDStabSimu) {
-			dstabAlgo.initialization();
-			this.isInitDStabSimu = true;
-		}
 		
 		// NOTE: internally it may run multiple steps for one environment action step.
 		int internalSteps = (int) Math.round(stepTimeInSec/dstabAlgo.getSimuStepSec());
@@ -1116,120 +932,6 @@ public class IpssPyGateway {
         	this.faultDuration = 0.0;
     	}
     	
-    	//randomly select one of the contingencis and apply it as a dynamic Event
-    	if(this.contingencyAry!=null && this.contingencyAry.length>0) {
-    		Random rand = new Random(); //instance of random class
-    	    int upperbound = this.contingencyAry.length;
-    	        //generate random values from 0-upperbound-1
-    	    int int_random = rand.nextInt(upperbound); 
-    		ContingencyConfigBean cont = this.contingencyAry[int_random];
-    		if(cont.eventType ==DynamicSimuEventType.BRANCH_OUTAGE) {
-    			 if(cont.componentIdAry!=null) {
-    				 for(String compId: cont.componentIdAry) {
-    					 dsNet.addDynamicEvent(DStabObjectFactory.createBranchSwitchEvent(compId, cont.eventStartTime, dsNet),compId+" outage during event: "+cont.contingencyId);
-    				 }
-    			 }
-    		}
-    		else {
-    			throw new Error("Contingency event type is not supported yet! DynamicSimuEventType = "+cont.eventType);
-    		}
-    		
-    		
-    	}
-    	
-    	IpssLogger.getLogger().info(String.format("Case id: %d, Fault bus id: %s, fault start time: %f, fault duration: %f", caseIdx, faultBusId,faultStartTime,faultDuration));
-    	
-    	return initDimAry;
-    	
-	}
-    
-    public int[] reset(int caseIdx,int faultBusIdx, double faultStartTime, double faultDuration, int contingencyIdx) {
-    	int [] initDimAry = null;
-    	this.stepReward = 0.0;
-    	this.totalRewards = 0.0;
-    	this.internalSimStepNum = 0;
-    	this.internalObsrvRecordNum = 0;
-    	
-    	this.isSimulationDone = false;
-    	this.applyFaultDuringInitialization = false;
-    	this.isActionApplied = false;
-    	
-    	this.observationHistoryRecord.clear();
-    	
-    	this.agentActionValuesAry = null;
-    	this.sm= null;
-    	
-    	this.faultStartTime = faultStartTime;
-    	this.faultDuration = faultDuration;
-    	
-    	this.rewardInfoBuffer = new StringBuffer();
-    	
-    	//this.initMaxGenAngleDiff = 0.0;
-    	
-    	
-        //update caseInputFiles using the base case associated with the input case index 
-    	//TODO, in the future, the input dynamic file could also be updated if associated dynamic files are provided.
-    	
-    	if(caseIdx>=0 && baseCaseFiles.size()>caseIdx) {
-    		caseInputFiles[0] = baseCaseFiles.get(caseIdx);
-    	}
-    	else {
-    		throw new Error("Error in the caseIdx in reset() function inpute, caseIdx must be less than number of cases. However, caseIdx ="+caseIdx+", # of total cases ="+baseCaseFiles.size());
-    		
-    	}
-    	
-
-    	
-    	try {
-    		initDimAry = initStudyCase(caseInputFiles,  dynSimConfigJsonFile, rlConfigJsonFile);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-    	
-    	if(faultBusIdx>= 0 && faultBusIdx<this.rlConfigBean.faultBusCandidates.length) {
-    	    this.faultBusId = this.rlConfigBean.faultBusCandidates[faultBusIdx];
-    	    if (this.dsNet.getBus(this.faultBusId)==null) {
-    	    	this.faultBusId= null;
-    	    	throw new Error(("Error in the faultBusId in faultBusCandidates list in RL json configure file, index="+faultBusIdx));
-        		
-    	    }
-    	}
-    	else {
-    		throw new Error(("The faultBusIdx is outside the faultBusCandidates list defined in RL json configure file!"));
-    		
-    	}
-    	
-    	if (this.faultBusId!= null && faultStartTime>= 0.0 && faultDuration > 0.0){
-    	    dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(this.faultBusId,this.dsNet,SimpleFaultCode.GROUND_3P, faultStartTime,faultDuration),"3phaseFault@"+faultBusId);
-    	}
-    	else{
-    		this.faultStartTime = 0.0;
-        	this.faultDuration = 0.0;
-    	}
-    	
-    	//randomly select one of the contingencis and apply it as a dynamic Event
-    	if(this.contingencyAry!=null && this.contingencyAry.length>0) {
-    		if(contingencyIdx < this.contingencyAry.length && contingencyIdx >= 0) {
-    			ContingencyConfigBean cont = this.contingencyAry[contingencyIdx];
-	    		if(cont.eventType!=null && cont.eventType ==DynamicSimuEventType.BRANCH_OUTAGE) {
-	    			 if(cont.componentIdAry!=null) {
-	    				 for(String compId: cont.componentIdAry) {
-	    					 dsNet.addDynamicEvent(DStabObjectFactory.createBranchSwitchEvent(compId, cont.eventStartTime, dsNet),compId+" outage during event: "+cont.contingencyId);
-	    				 }
-	    			 }
-	    		}
-	    		else {
-	    			throw new Error("Contingency event type is not supported yet! DynamicSimuEventType = "+cont.eventType);
-	    		}
-    		}
-    		else {
-    			IpssLogger.getLogger().severe("The contingency index is out of boundary of the contingency array! Index =" +contingencyIdx);
-    		}
-    		
-    		
-       }
-    	
     	IpssLogger.getLogger().info(String.format("Case id: %d, Fault bus id: %s, fault start time: %f, fault duration: %f", caseIdx, faultBusId,faultStartTime,faultDuration));
     	
     	return initDimAry;
@@ -1341,22 +1043,6 @@ public class IpssPyGateway {
 		  }
 		  else if(actionTypes[0].equalsIgnoreCase("GeneratorTripping")){
 			  this.actionProc = new GeneratorTrippingActionProcessor(this.dsNet,this.dstabAlgo);
-			  
-			 
-			  
-			  
-		  }
-		  else if(actionTypes[0].equalsIgnoreCase("ControlledIslanding")){
-				  this.actionProc = new LineSwitchActionProcessor(this.dsNet,this.dstabAlgo);
-				  int i = 1;
-				  for(String[] cutset: rlConfigBean.actionScopeAry2D) {
-					  this.cutSetTable.put("cutSet-"+i, Arrays.asList(cutset));
-					  i++;
-				  }
-				  this.actionProc.setActionCutSetTable(this.cutSetTable);
-				  this.actionProc.setActionScopeByCutSet(this.cutSetTable.keySet().stream().toArray(String[] ::new));
-				  
-
 		  }
 		  else{
 			  throw new Error("The input action type is not supportted yet: "+actionTypes[0]);
@@ -1368,7 +1054,6 @@ public class IpssPyGateway {
 		
 		actionTargetObjectIdList.clear();
 		
-		// bus oriented 
 		for(DStabBus bus:dsNet.getBusList()) {
 			if(bus.getBaseVoltage()>=rlConfigBean.actionVoltThreshold) {
 				if(bus.isActive()) {
@@ -1405,17 +1090,6 @@ public class IpssPyGateway {
 				}
 			}
 		}
-		//branch oriented
-		
-		//cutset oriented
-		for(String actionType: actionTypes) {
-		     if(actionType.equalsIgnoreCase("ControlledIslanding")) {
-								actionTargetObjectIdList.addAll(cutSetTable.keySet());
-								
-								action_location_num = cutSetTable.keySet().size();
-			 }	
-		}
-		
 		
 		// convert the list to array
 		actionTargetIds = actionTargetObjectIdList.toArray(new String[actionTargetObjectIdList.size()]);
@@ -1471,15 +1145,20 @@ public class IpssPyGateway {
 	}
 	
 	
+	
+
+	
+
+	
 	private boolean applyAction(double[] actionValueAry, String actionValueType, double duration) {
 		
 		
 		if(actionValueAry!=null) {
 			
 			
-			this.actualActionValuesAry = actionProc.applyAction(actionValueAry, actionValueType, duration);
+			this.actualactionValuesAry = actionProc.applyAction(actionValueAry, actionValueType, duration);
 			
-			if(this.actualActionValuesAry!=null)
+			if(this.actualactionValuesAry!=null)
 			      isActionApplied = true;
 		}
 		
@@ -1588,26 +1267,7 @@ public class IpssPyGateway {
         		else {
         			obsrv_genQ.clear();
         		}
-			}
-            else if(stateType.equalsIgnoreCase("totalGenTrippedP")) {
-            	if(obsrv_genTrippedPower==null) {
-            		obsrv_genTrippedPower = new LinkedHashMap<>();
-            	   
-            	}
-            	else {
-        			obsrv_genTrippedPower.clear();
-        		}
-			}
-            else if(stateType.equalsIgnoreCase("totalLoadShedP")) {
-            	if(obsrv_loadShedPower==null)
-            		obsrv_loadShedPower = new LinkedHashMap<>();
-        		else {
-        			obsrv_loadShedPower.clear();
-        		}
-			}
-            else {
-            	IpssLogger.getLogger().severe("Error: the input monitoring state type is invalid, please check! Input observationStateType item= "+stateType);
-            }
+			} 
 		}
 	
 		
@@ -1628,40 +1288,7 @@ public class IpssPyGateway {
 	
 				
 		for(DStabBus bus:dsNet.getBusList()) {
-			if(true) { //bus.isActive()
-				
-				// system-level total generation tripping and load shedding amount
-				for(String stateType : rlConfigBean.observationStateTypes) {
-					
-					if(bus.isGen() && stateType.equalsIgnoreCase("totalGenTrippedP")) {
-						double genTripP = 0;
-						if(bus.getContributeGenList()!=null) {
-							for (AclfGen gen: bus.getContributeGenList()) {
-								String id = bus.getId()+"_"+gen.getId();
-								
-								// if the initial generator status is active, and it becomes inactive at this step, this means it is tripped.
-								if(!gen.isActive() && this.obsrv_gen_status.get(id)) {
-									genTripP= gen.getGen().getReal();
-									this.obsrv_gen_status.put(id, false);
-									this.obsrv_genTrippedPower.put("genTrippedPower_"+id, genTripP);
-								}
-								else {
-									this.obsrv_genTrippedPower.put("genTrippedPower_"+id, 0.0);
-								}
-							}
-						}
-						
-					}
-					
-				
-					if(bus.isLoad() && stateType.equalsIgnoreCase("totalLoadShedP")) {
-						
-						double loadChngFactor = bus.getAccumulatedLoadChangeFactor();
-						this.obsrv_loadShedPower.put("totalLoadShedP_"+bus.getId(), bus.getLoadP()*loadChngFactor);
-
-					}
-				}
-				
+			if(bus.isActive()) {
 				if(bus.getBaseVoltage()>=rlConfigBean.observationVoltThreshold)
 				  if(isBusWithinScope(bus,scopeType,rlConfigBean.observationScopeAry)) {
 					
@@ -1681,14 +1308,14 @@ public class IpssPyGateway {
 						
 						else if(stateType.equalsIgnoreCase("loadP")) {
 							if(bus.isLoad() || bus.getContributeLoadList().size()>0) {
-								
-							   obsrv_loadP.put("loadP_"+bus.getId(),bus.calTotalLoad().getReal());
+								//TODO need to update to capture dynamic total loads
+							   obsrv_loadP.put("loadP_"+bus.getId(),bus.getLoadP());
 							}
 						}
 						else if(stateType.equalsIgnoreCase("loadQ")) {
 							if(bus.isLoad() || bus.getContributeLoadList().size()>0) {
-		
-							   obsrv_loadQ.put("loadQ_"+bus.getId(),bus.calTotalLoad().getImaginary());
+							  //TODO need to update to capture dynamic total loads
+							   obsrv_loadQ.put("loadQ_"+bus.getId(),bus.getLoadQ());
 							}
 						}
 						else if(stateType.equalsIgnoreCase("genSpeed")) {
@@ -1758,8 +1385,6 @@ public class IpssPyGateway {
 			}
 		}
 		
-
-		
 		// values
 		if(obsrv_freq!=null) {
 			all_observ_states_list.addAll(obsrv_freq.values());
@@ -1798,20 +1423,7 @@ public class IpssPyGateway {
 			all_observ_states_list.addAll(obsrv_genQ.values());
 			obsrv_state_names.addAll(obsrv_genQ.keySet());
 		}
-		if(obsrv_genTrippedPower!=null) {
-			
-			// calculate the total generation tripping amount
-		    totalGenTripPowerPU =   getTotalGeneratorTripPowerPU();
-			all_observ_states_list.add(totalGenTripPowerPU);
-			obsrv_state_names.add("totalGenTripPowerPU");
-		}
-		if(obsrv_loadShedPower!=null) {
-			// calculate the total load shedding amount
-		    totalLoadShedPowerPU =  getTotalLoadShedPowerPU();
-		    
-			all_observ_states_list.add(totalLoadShedPowerPU);
-			obsrv_state_names.add("totalLoadShedPowerPU");
-		}
+		
 		
 		observationAry = Stream.of(all_observ_states_list.toArray(new Double[0])).mapToDouble(Double::doubleValue).toArray();
 		
@@ -1840,28 +1452,6 @@ public class IpssPyGateway {
 		return observationAry;
 		
 	}
-    
-    private void saveInitGenStatus() {
-    	 if(obsrv_gen_status == null)
-    	      obsrv_gen_status = new Hashtable<>();
-		  // store the initial generator status
-		  for(DStabBus bus:dsNet.getBusList()) {
-				if(bus.isActive()) {
-					// system-level generation tripping and load shedding amount
-					for(String stateType : rlConfigBean.observationStateTypes) {
-						
-						if(bus.isGen() && stateType.equalsIgnoreCase("totalGenTrippedP")) {
-						
-							if(bus.getContributeGenList()!=null) {
-								for (AclfGen gen: bus.getContributeGenList()) {
-									this.obsrv_gen_status.put(bus.getId()+"_"+gen.getId(), gen.isActive());
-								}
-							}
-						}
-					}
-				}
-		  }
-    }
     
     public DynamicSimuAlgorithm getDStabAlgo() {
     	return this.dstabAlgo;
@@ -2215,29 +1805,19 @@ public class IpssPyGateway {
 		   }
 	   }
    }
-   
-   public int getNumOfContingencyCandidates() {
-	   if(this.contingencyAry==null)
-		   return 0;
-	   return this.contingencyAry.length;
-   }
 
 	public void setLoggerLevel(int level) {
-		if(level>3) {
+		if(level>2) {
 			IpssLogger.getLogger().setLevel(Level.FINE);
 			ODMLogger.getLogger().setLevel(Level.FINE);
 		}
-		if(level==3) {
+		if(level==2) {
 			IpssLogger.getLogger().setLevel(Level.INFO);
 			ODMLogger.getLogger().setLevel(Level.INFO);
 		}
-		else if(level==2) {
+		else if(level==1) {
 			IpssLogger.getLogger().setLevel(Level.WARNING);
 			ODMLogger.getLogger().setLevel(Level.WARNING);
-		}
-		else if(level==1) {
-			IpssLogger.getLogger().setLevel(Level.SEVERE);
-			ODMLogger.getLogger().setLevel(Level.SEVERE);
 		}
 		else {
 			IpssLogger.getLogger().setLevel(Level.OFF);
@@ -2280,7 +1860,7 @@ public class IpssPyGateway {
 			
 		GatewayServer server = new GatewayServer(app,port);
 
-		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang. Version 1.0.0_rc6, built on 08/21/2021");
+		System.out.println("InterPSS Engine for Reinforcement Learning (IPSS-RL) developed by Qiuhua Huang. Version 1.0.0_rc4, built on 03/29/2021");
 
 		System.out.println("Starting Py4J " + app.getClass().getTypeName() + " at port ="+port);
 		server.start();
