@@ -99,9 +99,6 @@ public class TestKundur2AreaRLvsBaseLine {
 		System.out.println("total rewards ="+app.getTotalRewards());
 	}
 	
-	
-	
-	
 	//@Test
 	public void testRL_baseline_UVLS() {
 	    IpssPyGateway app = new IpssPyGateway();

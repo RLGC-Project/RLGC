@@ -11,15 +11,11 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
 	public ReinforcementLearningConfigBean() {
 		
 	}
-	//----------Below are added to version 4------------------//
-	public double freqLowThreshold = 59.4;
-	public double freqHighThreshold = 60.6;
-	
-	//----------Below are added to version 3------------------//
+   //----------Below are added to version 3------------------//
 	public double actionVoltThreshold = 0.0;
 	public double actionPowerMWThreshold = 0.0;
 	public double earlyTerminationThreshold = 0.0; //could be used to determine when to stop the simulation due to stability issues.
-	public double stableThresholdCriterion = 0.0; //unit:  degree for angle,  pu for voltage or frequency
+	public double stableThresholdCriterion = 0.0; //unit:  degree for angle,  pu for voltage
 	public double preThresholdActionPenalty = 0.0; // If action is applied prior to meeting the <stableThresholdCriterion> defined above, the action will not be accepted but a penalty is applied.
 	
    //----------Below are added to version 2------------------//
@@ -36,7 +32,7 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
 	public String studyCaseFolder = "";
 	
 	// define observation stateTypes, such as voltage, frequency, genSpeed, loadP, loadQ
-	public String[] observationStateTypes = {} ; //{"voltage","frequency","loadP","loadQ","genSpeed","genAng","genP", "genQ", "totalGenTripP","totalLoadShedP"}; 
+	public String[] observationStateTypes = {} ; //{"voltage","frequency","loadP","loadQ","genSpeed","genAng","genP", "genQ"}; 
 	
 	public String observationScopeType ="";  //{Bus, Zone, Area,System}
 			
@@ -51,7 +47,6 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
 	public String actionScopeType =""; //{Bus, Zone, Area,System}
 	
 	public String[] actionScopeAry= {};
-	public String[][] actionScopeAry2D= {{}};
 	
 	public double envStepTimeInSec = 0;
 	
@@ -78,8 +73,6 @@ public class ReinforcementLearningConfigBean extends BaseJSONBean{
     public String[] faultBusCandidates = {}; //"Bus4", "Bus15", "Bus21"
     public double[] faultStartTimeCandidates = {0.05};
     public double[] faultDurationCandidates = {0.0, 0.05, 0.08};
-    
-    public ContingencyConfigBean[] contingencyList = {};
     
  
 }

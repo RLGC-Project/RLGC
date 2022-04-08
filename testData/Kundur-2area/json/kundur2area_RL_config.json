@@ -1,5 +1,5 @@
 {
-	"environmentName": "DynamicBraking_Kundur-2area",
+	"environmentName": "kundur-2area",
 	"studyCaseFolder": "testData\\Kundur-2area\\Scnarios-TielineFlowChange",
 	
 	"observationStateTypes": ["genSpeed","genAngle"],
