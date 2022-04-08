@@ -1,5 +1,8 @@
 package org.pnnl.gov.rl.action;
 
+import java.util.Hashtable;
+import java.util.List;
+
 import com.interpss.dstab.DStabilityNetwork;
 
 public class AbstractActionProcessor implements ActionProcessor {
@@ -7,6 +10,8 @@ public class AbstractActionProcessor implements ActionProcessor {
 	protected String[] actionScopeBusAry = null;
 	protected String[] actionScopeGeneratorAry = null;
 	protected String[] actionScopeBranchAry = null;
+	protected String[] actionScopeCutSetAry = null;
+	protected Hashtable<String, List<String>> actionCutSetTable = null;
 	
 	private double[] actionLevels= null;
 	protected DStabilityNetwork dstabNet = null;
@@ -73,6 +78,30 @@ public class AbstractActionProcessor implements ActionProcessor {
 	public double[] getAgentActionStatus() {
 		
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setActionScopeByCutSet(String[] actionScopeAry) {
+		this.actionScopeCutSetAry = actionScopeAry;
+		
+	}
+
+	@Override
+	public String[] getActionScopeByCutSet() {
+		
+		return this.actionScopeCutSetAry;
+	}
+
+	@Override
+	public Hashtable<String, List<String>> getActionCutSetTable() {
+	
+		return this.actionCutSetTable;
+	}
+
+	@Override
+	public void setActionCutSetTable(Hashtable<String, List<String>> cutSetTable) {
+		 this.actionCutSetTable = cutSetTable;
+		
 	}
 
 	

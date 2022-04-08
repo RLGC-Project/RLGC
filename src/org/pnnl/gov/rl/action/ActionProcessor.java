@@ -1,5 +1,8 @@
 package org.pnnl.gov.rl.action;
 
+import java.util.Hashtable;
+import java.util.List;
+
 public interface ActionProcessor {
 	
 	/**
@@ -17,6 +20,13 @@ public interface ActionProcessor {
 	public void setActionScopeByBranch(String[] actionScopeAry);
 	
 	public String[] getActionScopeByBranch();
+	
+	public void setActionScopeByCutSet(String[] actionScopeAry);
+	
+	public String[] getActionScopeByCutSet();
+	
+	public Hashtable<String, List<String>> getActionCutSetTable();
+	public void setActionCutSetTable(Hashtable<String, List<String>> cutSetTable);
 	
 	public void setActionLevels(double[] actionLevels);
 	

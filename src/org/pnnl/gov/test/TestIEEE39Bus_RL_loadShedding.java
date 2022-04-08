@@ -12,7 +12,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.dstab.relay.LVSHLoadRelayModel;
+import org.interpss.dstab.relay.impl.LoadUVShedRelayModel;
 import org.interpss.numeric.datatype.Triplet;
 import org.junit.Test;
 import org.pnnl.gov.pss_gateway.IpssPyGateway;
@@ -461,7 +461,7 @@ public class TestIEEE39Bus_RL_loadShedding {
 		
 		DStabBus bus5 = dsNet.getBus("Bus5");
 		
-	    LVSHLoadRelayModel lvsh = new LVSHLoadRelayModel(bus5, "1");
+	    LoadUVShedRelayModel lvsh = new LoadUVShedRelayModel(bus5, "1");
 	    
 	    //Triplet <voltage, time, fraction>
 	    Triplet vtf1 = new Triplet(0.8, 0.15,0.2);
